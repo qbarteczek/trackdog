@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_compass">Kompas</string>
+    <string name="tab_trail">Ślad</string>
+    <string name="tab_device">Urządzenie</string>
+
+    <string name="lbl_speed">Prędkość</string>
+    <string name="lbl_battery">Bateria</string>
+    <string name="lbl_gps">GPS</string>
+    <string name="lbl_signal">Sygnał</string>
+    <string name="lbl_distance">Dystans</string>
+    <string name="lbl_moving">W ruchu</string>
+    <string name="lbl_avg">Średnia</string>
+    <string name="lbl_max">Maks.</string>
+    <string name="lbl_link">Radio przy sobie</string>
+    <string name="lbl_tracker">Tracker</string>
+
+    <string name="st_start">włączony</string>
+    <string name="st_moving">idzie</string>
+    <string name="st_fast">biegnie</string>
+    <string name="st_still">stoi</string>
+    <string name="st_ok">OK</string>
+    <string name="st_sos">SOS</string>
+    <string name="st_no_gps">brak GPS</string>
+
+    <string name="age_now">teraz</string>
+    <string name="age_s">%d s temu</string>
+    <string name="age_min">%d min temu</string>
+    <string name="age_h">%1$d h %2$d min temu</string>
+    <string name="age_d">%d dni temu</string>
+
+    <string name="link_off">nie połączono</string>
+    <string name="link_connecting">łączenie…</string>
+    <string name="link_pairing">parowanie: podaj PIN</string>
+    <string name="link_connected">połączono</string>
+    <string name="link_waiting">czekam na radio…</string>
+    <string name="link_demo">pokaz</string>
+    <string name="link_none">nie wybrano radia</string>
+
+    <string name="no_reports">brak meldunków</string>
+    <string name="no_dog_pos">brak pozycji</string>
+    <string name="no_phone_gps">czekam na GPS telefonu</string>
+    <string name="no_trail">brak śladu w tym dniu</string>
+    <string name="last_known">ostatnia znana pozycja</string>
+    <string name="satellites">%d sat</string>
+    <string name="stored_fmt">Zapisane meldunki: %d</string>
+    <string name="day_fmt">%1$s · %2$d meld. · %3$d zgub.</string>
+
+    <string name="btn_om_point">Pokaż w Organic Maps</string>
+    <string name="btn_om_trail">Otwórz ślad w Organic Maps</string>
+    <string name="btn_pick">Wybierz radio (Bluetooth)</string>
+    <string name="btn_disconnect">Rozłącz</string>
+    <string name="btn_clear">Usuń zapisany ślad</string>
+    <string name="clear_confirm">Usunąć z telefonu wszystkie zapisane meldunki?</string>
+    <string name="yes">Usuń</string>
+    <string name="no">Anuluj</string>
+    <string name="tracker_auto">automatycznie (ostatnio słyszany)</string>
+    <string name="scan_title">Szukam radia MeshCore…</string>
+    <string name="scan_hint">Wybierz radio, które nosisz przy sobie – nigdy sam tracker.</string>
+    <string name="demo_switch">Tryb pokazowy (symulowany spacer)</string>
+    <string name="info_text">TrackDog odbiera meldunki, które tracker wysyła na swój prywatny kanał MeshCore. Telefon łączy się przez Bluetooth z radiem, które nosisz przy sobie; aplikacja utrzymuje połączenie w tle, od razu zabiera każdy meldunek z radia i zapisuje ślad w telefonie.\n\nKanał musi być ustawiony na radiu (oficjalna aplikacja MeshCore). TrackDog niczego nie nadaje przez LoRa.</string>
+    <string name="version_fmt">TrackDog %s · otwarte źródła (MIT)</string>
+
+    <string name="perm_needed">Do połączenia z radiem potrzebna jest zgoda na Bluetooth.</string>
+    <string name="bt_off">Włącz Bluetooth.</string>
+    <string name="om_missing">Nie znaleziono aplikacji z mapą. Zainstaluj Organic Maps.</string>
+    <string name="gpx_failed">Nie udało się zapisać pliku GPX.</string>
+    <string name="gpx_empty">Brak śladu do wysłania.</string>
+
+    <string name="notif_channel_status">Połączenie i ostatni meldunek</string>
+    <string name="notif_channel_alarm">Alarmy (SOS, bateria)</string>
+    <string name="notif_sos">%s: SOS!</string>
+    <string name="notif_low">%s: słaba bateria trackera</string>
+    <string name="notif_idle">Nasłuch trackera</string>
+</resources>

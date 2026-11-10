@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- header: the mark, the tracker and the state of the Bluetooth link -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="14dp">
+
+        <ImageView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_logo" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/app_name"
+                android:textColor="@color/cream"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/headTracker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gold"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/headLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card"
+            android:drawablePadding="6dp"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="5dp"
+            android:textColor="@color/cream"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 1: compass -->
+        <LinearLayout
+            android:id="@+id/pageCompass"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <pl.qbart.trackdog.CompassView
+                android:id="@+id/compass"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/statusLine"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:paddingBottom="8dp"
+                android:textColor="@color/cream"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_speed" />
+                    <TextView android:id="@+id/tileSpeed" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_battery" />
+                    <TextView android:id="@+id/tileBattery" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_gps" />
+                    <TextView android:id="@+id/tileGps" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_signal" />
+                    <TextView android:id="@+id/tileSignal" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnPoint"
+                style="@style/Btn"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/btn_om_point" />
+        </LinearLayout>
+
+        <!-- 2: trail of a day -->
+        <LinearLayout
+            android:id="@+id/pageTrail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/dayPrev"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:text="‹"
+                    android:textColor="@color/gold"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/dayTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/cream"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/dayNext"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:text="›"
+                    android:textColor="@color/gold"
+                    android:textSize="28sp" />
+            </LinearLayout>
+
+            <pl.qbart.trackdog.TrailView
+                android:id="@+id/trail"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/card" />
+
+            <pl.qbart.trackdog.SpeedChartView
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="84dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/card" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_distance" />
+                    <TextView android:id="@+id/tileDistance" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_moving" />
+                    <TextView android:id="@+id/tileMoving" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_avg" />
+                    <TextView android:id="@+id/tileAvg" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_max" />
+                    <TextView android:id="@+id/tileMax" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnTrail"
+                style="@style/Btn"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/btn_om_trail" />
+        </LinearLayout>
+
+        <!-- 3: device -->
+        <ScrollView
+            android:id="@+id/pageDevice"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/card"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_link" />
+                    <TextView android:id="@+id/devName" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/devState" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/muted" android:textSize="14sp" />
+                </LinearLayout>
+
+                <Button android:id="@+id/btnPick" style="@style/Btn" android:text="@string/btn_pick" />
+                <Button android:id="@+id/btnDisconnect" style="@style/Btn.Ghost" android:text="@string/btn_disconnect" />
+
+                <LinearLayout
+                    android:id="@+id/cardTracker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/card"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_tracker" />
+                    <TextView android:id="@+id/devTracker" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/devStored" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/muted" android:textSize="14sp" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/swDemo"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="4dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="6dp"
+                    android:text="@string/demo_switch"
+                    android:textColor="@color/cream"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:lineSpacingMultiplier="1.15"
+                    android:padding="10dp"
+                    android:text="@string/info_text"
+                    android:textColor="@color/muted"
+                    android:textSize="14sp" />
+
+                <Button android:id="@+id/btnClear" style="@style/Btn.Ghost" android:text="@string/btn_clear" />
+
+                <TextView
+                    android:id="@+id/devVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+
+    <!-- tabs -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:background="@color/surface"
+        android:orientation="horizontal">
+
+        <TextView android:id="@+id/tabCompass" style="@style/Tab" android:text="@string/tab_compass" />
+        <TextView android:id="@+id/tabTrail" style="@style/Tab" android:text="@string/tab_trail" />
+        <TextView android:id="@+id/tabDevice" style="@style/Tab" android:text="@string/tab_device" />
+    </LinearLayout>
+</LinearLayout>

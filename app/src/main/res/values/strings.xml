@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">TrackDog</string>
+
+    <string name="tab_compass">Compass</string>
+    <string name="tab_trail">Trail</string>
+    <string name="tab_device">Device</string>
+
+    <string name="lbl_speed">Speed</string>
+    <string name="lbl_battery">Battery</string>
+    <string name="lbl_gps">GPS</string>
+    <string name="lbl_signal">Signal</string>
+    <string name="lbl_distance">Distance</string>
+    <string name="lbl_moving">Moving</string>
+    <string name="lbl_avg">Average</string>
+    <string name="lbl_max">Top</string>
+    <string name="lbl_link">Companion radio</string>
+    <string name="lbl_tracker">Tracker</string>
+
+    <string name="st_start">switched on</string>
+    <string name="st_moving">walking</string>
+    <string name="st_fast">running</string>
+    <string name="st_still">resting</string>
+    <string name="st_ok">OK</string>
+    <string name="st_sos">SOS</string>
+    <string name="st_no_gps">no GPS fix</string>
+
+    <string name="age_now">just now</string>
+    <string name="age_s">%d s ago</string>
+    <string name="age_min">%d min ago</string>
+    <string name="age_h">%1$d h %2$d min ago</string>
+    <string name="age_d">%d days ago</string>
+
+    <string name="link_off">not connected</string>
+    <string name="link_connecting">connecting…</string>
+    <string name="link_pairing">pairing: enter the PIN</string>
+    <string name="link_connected">connected</string>
+    <string name="link_waiting">waiting for the radio…</string>
+    <string name="link_demo">demo</string>
+    <string name="link_none">no radio chosen</string>
+
+    <string name="no_reports">no reports yet</string>
+    <string name="no_dog_pos">no position yet</string>
+    <string name="no_phone_gps">waiting for the phone GPS</string>
+    <string name="no_trail">no trail on this day</string>
+    <string name="last_known">last known position</string>
+    <string name="satellites">%d sat</string>
+    <string name="stored_fmt">Stored reports: %d</string>
+    <string name="day_fmt">%1$s · %2$d reports · %3$d lost</string>
+
+    <string name="btn_om_point">Show in Organic Maps</string>
+    <string name="btn_om_trail">Open the trail in Organic Maps</string>
+    <string name="btn_pick">Choose the companion radio</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="btn_clear">Delete the stored trail</string>
+    <string name="clear_confirm">Delete all stored reports from this phone?</string>
+    <string name="yes">Delete</string>
+    <string name="no">Cancel</string>
+    <string name="tracker_auto">automatic (last heard)</string>
+    <string name="scan_title">Looking for MeshCore radios…</string>
+    <string name="scan_hint">Choose the radio you carry, never the tracker itself.</string>
+    <string name="demo_switch">Demo mode (simulated walk)</string>
+    <string name="info_text">TrackDog listens to the reports your tracker posts on its private MeshCore channel. The phone connects by Bluetooth to the companion radio you carry; the app keeps the connection in the background, takes every report out of the radio at once and stores the trail on the phone.\n\nThe channel must be set on the companion radio (official MeshCore app). TrackDog never transmits over LoRa.</string>
+    <string name="version_fmt">TrackDog %s · open source (MIT)</string>
+
+    <string name="perm_needed">Bluetooth permission is needed to reach the companion radio.</string>
+    <string name="bt_off">Switch Bluetooth on.</string>
+    <string name="om_missing">No map app found. Install Organic Maps.</string>
+    <string name="gpx_failed">Could not write the GPX file.</string>
+    <string name="gpx_empty">No trail to export.</string>
+
+    <string name="notif_channel_status">Connection and last report</string>
+    <string name="notif_channel_alarm">Alarms (SOS, low battery)</string>
+    <string name="notif_sos">%s: SOS!</string>
+    <string name="notif_low">%s: tracker battery low</string>
+    <string name="notif_idle">Listening for the tracker</string>
+</resources>

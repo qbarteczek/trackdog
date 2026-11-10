@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- notification icon: the head of the mark, one colour -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="62" android:viewportHeight="62">
+    <group android:translateX="-28.7" android:translateY="-28">
+        <path android:fillColor="#FFFFFFFF"
+            android:pathData="M33.5 84 C32.5 74 32 66 33.5 58 C34 50 35.5 43 40 37.5 C44.5 32 51 29.5 57.5 30.5 C62 31.2 65.5 33.5 67.5 37 C69 39.6 71.5 41 75 41.6 C79.5 42.4 83.5 43.4 85.6 45.6 C87.4 47.5 87.3 50.3 85.6 52 C84.6 53 83.2 53.6 81.8 53.8 C82.6 55.2 82.2 57 80.6 57.8 C76.5 59.8 71 60.6 66.5 60.4 C63.6 60.3 61.6 61.6 61 64.4 C60.2 68.4 61.4 73 63.6 77.5 C64.8 80 65.6 82 66 84 C58 89 42 89 33.5 84Z" />
+    </group>
+</vector>

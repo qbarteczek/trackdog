@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#12241F</color>
+    <color name="surface">#183029</color>
+    <color name="surface_hi">#21403A</color>
+    <color name="line">#2E544B</color>
+    <color name="gold">#E7B55C</color>
+    <color name="gold_dark">#B9832F</color>
+    <color name="cream">#F6EBD6</color>
+    <color name="muted">#8FA69E</color>
+    <color name="red">#E4572E</color>
+    <color name="green">#6FCF97</color>
+    <color name="blue">#5AB0F2</color>
+</resources>
