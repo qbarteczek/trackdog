@@ -173,13 +173,57 @@
                     android:textSize="28sp" />
             </LinearLayout>
 
-            <pl.qbart.trackdog.TrailView
-                android:id="@+id/trail"
+            <!-- the map (added in code when an offline map is loaded) over the plain trail picture -->
+            <FrameLayout
+                android:id="@+id/trailBox"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:background="@drawable/card" />
+                android:background="@drawable/card">
+
+                <pl.qbart.trackdog.TrailView
+                    android:id="@+id/trail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:id="@+id/mapFit"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/btn_round"
+                    android:gravity="center"
+                    android:text="◎"
+                    android:textColor="@color/gold"
+                    android:textSize="22sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/mapCredit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="6dp"
+                    android:background="#B3FFFFFF"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:text="© OpenStreetMap"
+                    android:textColor="#333333"
+                    android:textSize="10sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/mapHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/map_hint"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </FrameLayout>
 
             <pl.qbart.trackdog.SpeedChartView
                 android:id="@+id/chart"
@@ -274,6 +318,23 @@
                     <TextView android:id="@+id/devTracker" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     <TextView android:id="@+id/devStored" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/muted" android:textSize="14sp" />
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/card"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_map" />
+                    <TextView android:id="@+id/mapInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:lineSpacingMultiplier="1.15" android:paddingTop="4dp" android:textColor="@color/cream" android:textSize="15sp" />
+                </LinearLayout>
+
+                <Button android:id="@+id/btnMapDownload" style="@style/Btn" android:text="@string/btn_map_download" />
+                <Button android:id="@+id/btnMapImport" style="@style/Btn.Ghost" android:text="@string/btn_map_import" />
+                <Button android:id="@+id/btnMapDelete" style="@style/Btn.Ghost" android:text="@string/btn_map_delete" />
 
                 <Switch
                     android:id="@+id/swDemo"

@@ -4,11 +4,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DownloadManager
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.GeomagneticField
 import android.hardware.Sensor
@@ -18,22 +20,33 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
+import android.provider.OpenableColumns
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.graphics.Rect
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import org.mapsforge.map.android.graphics.AndroidGraphicFactory
+import org.mapsforge.map.reader.MapFile
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.abs
 
 class MainActivity : Activity(), SensorEventListener, LocationListener {
     private lateinit var store: Store
@@ -46,6 +59,10 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
     private lateinit var trailView: TrailView
     private lateinit var chart: SpeedChartView
     private lateinit var swDemo: Switch
+    private lateinit var trailBox: FrameLayout
+    private lateinit var trailMap: TrailMap
+    private lateinit var gestures: GestureDetector
+    private var mapPhone: Location? = null
     private var tab = 0
 
     // what is on screen
@@ -68,12 +85,14 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
     private val ticker = object : Runnable {
         override fun run() {
             live()
+            if (prefs.mapDownload != 0L) pollMapDownload()
             main.postDelayed(this, 1000)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AndroidGraphicFactory.createInstance(application)   // before any map view
         setContentView(R.layout.activity_main)
         store = Store(this)
         prefs = Prefs(this)
@@ -86,6 +105,39 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         trailView.emptyText = getString(R.string.no_trail)
         chart = findViewById(R.id.chart)
         swDemo = findViewById(R.id.swDemo)
+        trailBox = findViewById(R.id.trailBox)
+        trailBox.clipToOutline = true   // the map gets the rounded corners of the card
+        trailMap = TrailMap(this, trailBox)
+        findViewById<View>(R.id.mapFit).setOnClickListener { trailMap.fit() }
+        findViewById<View>(R.id.btnMapDownload).setOnClickListener { downloadMap() }
+        findViewById<View>(R.id.btnMapImport).setOnClickListener {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"), REQ_MAP)
+        }
+        findViewById<View>(R.id.btnMapDelete).setOnClickListener {
+            AlertDialog.Builder(this).setMessage(R.string.map_delete_confirm)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    trailMap.destroy()
+                    MapFiles.list(this).forEach { it.delete() }
+                    mapsChanged()
+                }
+                .setNegativeButton(R.string.no, null).show()
+        }
+
+        // tabs also change with a horizontal swipe; on the map a swipe moves the map
+        val box = Rect()
+        gestures = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                val start = e1 ?: return false
+                if (tab == 1 && trailMap.active && trailBox.getGlobalVisibleRect(box) &&
+                    box.contains(start.rawX.toInt(), start.rawY.toInt())) return false
+                val dx = e2.x - start.x
+                val dy = e2.y - start.y
+                if (abs(dx) < 90 * resources.displayMetrics.density || abs(dx) < 2 * abs(dy)) return false
+                val next = tab + if (dx < 0) 1 else -1
+                if (next in pages.indices) showTab(next)
+                return false
+            }
+        })
 
         findViewById<View>(R.id.btnPoint).setOnClickListener {
             val p = pos
@@ -245,6 +297,7 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         findViewById<TextView>(R.id.devTracker).text = tracker ?: "—"
         findViewById<TextView>(R.id.devStored).text = getString(R.string.stored_fmt, store.count())
         if (swDemo.isChecked != demo) swDemo.isChecked = demo
+        if (prefs.mapDownload == 0L) updateMapInfo()
 
         if (tab == 1) loadTrail()
         live()
@@ -284,9 +337,26 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         }
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        gestures.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
+    }
+
+    override fun onDestroy() {
+        trailMap.destroy()
+        AndroidGraphicFactory.clearResourceMemoryCache()
+        super.onDestroy()
+    }
+
     private fun showTab(i: Int) {
+        val from = tab
         tab = i
         pages.forEachIndexed { n, v -> v.visibility = if (n == i) View.VISIBLE else View.GONE }
+        if (i != from && pages[i].width > 0) {   // the new page slides in from the side it lies on
+            pages[i].translationX = pages[i].width * (if (i > from) 0.25f else -0.25f)
+            pages[i].alpha = 0f
+            pages[i].animate().translationX(0f).alpha(1f).setDuration(170).start()
+        }
         tabs.forEachIndexed { n, t -> t.isSelected = n == i }
         if (i == 1) loadTrail()
     }
@@ -322,7 +392,141 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         val i = days.indexOf(d)
         findViewById<View>(R.id.dayPrev).alpha = if (i > 0) 1f else 0.25f
         findViewById<View>(R.id.dayNext).alpha = if (i in 0 until days.size - 1) 1f else 0.25f
-        trailView.phone = phone?.let { Pair(it.latitude, it.longitude) }
+        val ph = phone?.let { Pair(it.latitude, it.longitude) }
+        trailView.phone = ph
+        val hasMap = trailMap.ensure()
+        findViewById<View>(R.id.mapFit).visibility = if (hasMap) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.mapCredit).visibility = if (hasMap) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.mapHint).visibility = if (hasMap) View.GONE else View.VISIBLE
+        trailView.visibility = if (hasMap) View.INVISIBLE else View.VISIBLE
+        if (hasMap) {
+            mapPhone = phone
+            trailMap.show(trail?.points ?: emptyList(), ph, "$tracker|$d")
+        }
+    }
+
+    // ------------------------------------------------------------------ offline maps
+
+    /** after a map was added or removed */
+    private fun mapsChanged() {
+        updateMapInfo()
+        if (tab == 1) loadTrail()
+    }
+
+    private fun updateMapInfo(progress: String? = null) {
+        val files = MapFiles.list(this)
+        val lines = files.map { getString(R.string.map_file_fmt, it.name, it.length() / 1_000_000) }.toMutableList()
+        if (files.isEmpty() && progress == null) lines += getString(R.string.map_none)
+        if (progress != null) lines += progress
+        findViewById<TextView>(R.id.mapInfo).text = lines.joinToString("\n")
+        findViewById<Button>(R.id.btnMapDownload).setText(
+            if (prefs.mapDownload != 0L) R.string.btn_map_cancel else R.string.btn_map_download
+        )
+        findViewById<View>(R.id.btnMapDelete).visibility = if (files.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun downloadMap() {
+        val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        if (prefs.mapDownload != 0L) {   // the button now means "cancel"
+            dm.remove(prefs.mapDownload)
+            prefs.mapDownload = 0
+            updateMapInfo()
+            return
+        }
+        AlertDialog.Builder(this).setMessage(R.string.map_download_confirm)
+            .setPositiveButton(R.string.map_download_yes) { _, _ ->
+                File(MapFiles.dir(this), MAP_PART).delete()
+                val request = DownloadManager.Request(Uri.parse(MAP_URL))
+                    .setTitle(getString(R.string.map_download_title))
+                    .setDestinationInExternalFilesDir(this, "maps", MAP_PART)
+                    .setAllowedOverMetered(false)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                prefs.mapDownload = dm.enqueue(request)
+                pollMapDownload()
+            }
+            .setNegativeButton(R.string.no, null).show()
+    }
+
+    /** follows the running download; when it ends, the file becomes a map */
+    private fun pollMapDownload() {
+        val id = prefs.mapDownload
+        if (id == 0L) return
+        val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        var status = -1
+        var done = 0L
+        var total = 0L
+        dm.query(DownloadManager.Query().setFilterById(id))?.use { c ->
+            if (c.moveToFirst()) {
+                status = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                done = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                total = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+            }
+        }
+        when (status) {
+            DownloadManager.STATUS_SUCCESSFUL -> {
+                prefs.mapDownload = 0
+                val part = File(MapFiles.dir(this), MAP_PART)
+                val ok = part.renameTo(File(MapFiles.dir(this), MAP_NAME))
+                Toast.makeText(this, if (ok) R.string.map_ready else R.string.map_failed, Toast.LENGTH_LONG).show()
+                mapsChanged()
+            }
+            DownloadManager.STATUS_FAILED, -1 -> {
+                prefs.mapDownload = 0
+                if (status != -1) dm.remove(id)
+                Toast.makeText(this, R.string.map_failed, Toast.LENGTH_LONG).show()
+                updateMapInfo()
+            }
+            DownloadManager.STATUS_RUNNING -> updateMapInfo(
+                getString(R.string.map_downloading, if (total > 0) (done * 100 / total).toInt() else 0, done / 1_000_000, total.coerceAtLeast(0) / 1_000_000)
+            )
+            else -> updateMapInfo(getString(R.string.map_waiting))
+        }
+    }
+
+    /** a .map file chosen by the user is copied into the app's own folder */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val uri = data?.data
+        if (requestCode != REQ_MAP || resultCode != RESULT_OK || uri == null) return
+        var name = "map.map"
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+            if (c.moveToFirst()) c.getString(0)?.let { name = it }
+        }
+        name = name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+        if (!name.endsWith(".map")) name += ".map"
+        val target = File(MapFiles.dir(this), name)
+        val part = File(MapFiles.dir(this), "$name.part")
+        val dialog = AlertDialog.Builder(this).setMessage(getString(R.string.map_copying, 0)).setCancelable(false).show()
+        Thread {
+            val ok = try {
+                contentResolver.openInputStream(uri)!!.use { input ->
+                    part.outputStream().use { out ->
+                        val buf = ByteArray(1 shl 20)
+                        var copied = 0L
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            out.write(buf, 0, n)
+                            copied += n
+                            if (copied % (16L shl 20) < n) {
+                                val mb = copied / 1_000_000
+                                runOnUiThread { dialog.setMessage(getString(R.string.map_copying, mb)) }
+                            }
+                        }
+                    }
+                }
+                MapFile(part).close()   // throws when the file is not a map
+                target.delete()
+                part.renameTo(target)
+            } catch (e: Exception) {
+                false
+            }
+            if (!ok) part.delete()
+            runOnUiThread {
+                dialog.dismiss()
+                Toast.makeText(this, if (ok) R.string.map_ready else R.string.map_bad, Toast.LENGTH_LONG).show()
+                mapsChanged()
+            }
+        }.start()
     }
 
     private fun stepDay(step: Int) {
@@ -424,7 +628,12 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
             loc.time - cur.time > 20_000 || (loc.hasAccuracy() && cur.hasAccuracy() && loc.accuracy < cur.accuracy)
         if (!better) return
         phone = loc
-        if (tab == 1) trailView.phone = Pair(loc.latitude, loc.longitude)
+        if (tab == 1) {
+            trailView.phone = Pair(loc.latitude, loc.longitude)
+            // on the map the phone's dot moves only after a few metres: redrawing costs more there
+            val shown = mapPhone
+            if (trailMap.active && (shown == null || shown.distanceTo(loc) > 8)) loadTrail()
+        }
         live()
     }
 
@@ -448,4 +657,12 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    companion object {
+        private const val REQ_MAP = 2
+        private const val MAP_NAME = "poland.map"
+        private const val MAP_PART = "poland.map.download"
+        // a mirror of download.mapsforge.org (the project asks to use mirrors for big files)
+        private const val MAP_URL = "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/poland.map"
+    }
 }

@@ -46,6 +46,10 @@ class Prefs(ctx: Context) {
     var demo: Boolean
         get() = p.getBoolean("demo", false)
         set(v) = p.edit().putBoolean("demo", v).apply()
+    /** id of a running map download (DownloadManager), 0 = none */
+    var mapDownload: Long
+        get() = p.getLong("mapDownload", 0)
+        set(v) = p.edit().putLong("mapDownload", v).apply()
 }
 
 /**

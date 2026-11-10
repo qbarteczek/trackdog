@@ -60,7 +60,7 @@
     <string name="scan_title">Looking for MeshCore radios…</string>
     <string name="scan_hint">Choose the radio you carry, never the tracker itself.</string>
     <string name="demo_switch">Demo mode (simulated walk)</string>
-    <string name="info_text">TrackDog listens to the reports your tracker posts on its private MeshCore channel. The phone connects by Bluetooth to the companion radio you carry; the app keeps the connection in the background, takes every report out of the radio at once and stores the trail on the phone.\n\nThe channel must be set on the companion radio (official MeshCore app). TrackDog never transmits over LoRa.</string>
+    <string name="info_text">TrackDog listens to the reports your tracker posts on its private MeshCore channel. The phone connects by Bluetooth to the companion radio you carry; the app keeps the connection in the background, takes every report out of the radio at once and stores the trail on the phone.\n\nThe channel must be set on the companion radio (official MeshCore app). TrackDog never transmits over LoRa and uses the internet only to download a map when you ask for it.</string>
     <string name="version_fmt">TrackDog %s · open source (MIT)</string>
 
     <string name="perm_needed">Bluetooth permission is needed to reach the companion radio.</string>
@@ -68,6 +68,25 @@
     <string name="om_missing">No map app found. Install Organic Maps.</string>
     <string name="gpx_failed">Could not write the GPX file.</string>
     <string name="gpx_empty">No trail to export.</string>
+
+    <string name="lbl_map">Offline map</string>
+    <string name="map_hint">No offline map yet: add one on the Device tab</string>
+    <string name="map_none">No map loaded. The trail is drawn on a plain background.</string>
+    <string name="map_file_fmt">%1$s · %2$d MB</string>
+    <string name="map_downloading">Downloading the map of Poland: %1$d%% (%2$d of %3$d MB)</string>
+    <string name="map_waiting">The download is waiting (Wi-Fi needed).</string>
+    <string name="map_failed">The map download failed.</string>
+    <string name="map_ready">The map is ready.</string>
+    <string name="map_bad">This file is not a Mapsforge map (.map).</string>
+    <string name="map_copying">Copying the map: %d MB</string>
+    <string name="btn_map_download">Download the map of Poland (1.5 GB, Wi-Fi)</string>
+    <string name="btn_map_cancel">Cancel the download</string>
+    <string name="btn_map_import">Add a map from a file (.map)</string>
+    <string name="btn_map_delete">Delete the maps</string>
+    <string name="map_delete_confirm">Delete all offline maps from this phone?</string>
+    <string name="map_download_confirm">Download the map of Poland (1.5 GB) from the Mapsforge server? Only over Wi-Fi; you can keep using the app.</string>
+    <string name="map_download_yes">Download</string>
+    <string name="map_download_title">TrackDog: map of Poland</string>
 
     <string name="notif_channel_status">Connection and last report</string>
     <string name="notif_channel_alarm">Alarms (SOS, low battery)</string>

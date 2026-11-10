@@ -3,6 +3,10 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// folder with trackdog.keystore and signing.properties: TRACKDOG_SIGNING or, in the author's workspace, a private folder
+def signingDir = [System.getenv('TRACKDOG_SIGNING'), "${rootDir}/../tracker-psa/klucz-trackdog"]
+        .findAll { it }.collect { new File(it) }.find { new File(it, 'trackdog.keystore').exists() }
+
 android {
     namespace 'pl.qbart.trackdog'
     compileSdk 34
@@ -11,13 +15,32 @@ android {
         applicationId 'pl.qbart.trackdog'
         minSdk 29
         targetSdk 34
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
+    }
+
+    // Every build is signed with the one TrackDog key, so a new version always installs as an update of
+    // the old one. The key is not in this repository: see README, "Wydania".
+    signingConfigs {
+        trackdog {
+            if (signingDir != null) {
+                def props = new Properties()
+                new File(signingDir, 'signing.properties').withInputStream { props.load(it) }
+                storeFile new File(signingDir, 'trackdog.keystore')
+                storePassword props.getProperty('storePassword')
+                keyAlias props.getProperty('keyAlias')
+                keyPassword props.getProperty('keyPassword')
+            }
+        }
     }
 
     buildTypes {
+        debug {
+            if (signingDir != null) signingConfig signingConfigs.trackdog
+        }
         release {
             minifyEnabled false
+            if (signingDir != null) signingConfig signingConfigs.trackdog
         }
     }
     compileOptions {
@@ -35,7 +58,17 @@ android {
     }
 }
 
-// No libraries on purpose: the app uses only the Android framework.
+// One library: Mapsforge (LGPL) draws the offline map. Everything else is the Android framework.
 dependencies {
+    implementation 'org.mapsforge:mapsforge-map-android:0.25.0'
+    implementation 'org.mapsforge:mapsforge-map-reader:0.25.0'
+    implementation 'org.mapsforge:mapsforge-themes:0.25.0'
     testImplementation 'junit:junit:4.13.2'
+}
+
+// A release without the TrackDog key would not update installed copies: refuse to build it.
+tasks.configureEach { t ->
+    if (t.name == 'packageRelease' && signingDir == null) {
+        t.doFirst { throw new GradleException('TrackDog signing key not found (set TRACKDOG_SIGNING)') }
+    }
 }
