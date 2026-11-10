@@ -51,16 +51,45 @@ Punkt 3 rozwiązuje dwa kłopoty, od których zaczął się ten projekt: meldunk
 Aplikacja niczego nie nadaje przez LoRa i nie zmienia ustawień radia (poza ustawieniem zegara, jak każda aplikacja
 MeshCore).
 
+## Dokumentacja
+
+| Dokument | Co w nim jest |
+|---|---|
+| [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md) | **instrukcja użytkowania**: przygotowanie, spacer, ekrany, przycisk trackera, rozwiązywanie kłopotów |
+| [docs/SPRZET.md](docs/SPRZET.md) | **sprzęt**: co jest potrzebne, zestaw używany przez autora, inne możliwe konfiguracje |
+| [docs/FIRMWARE.md](docs/FIRMWARE.md) | firmware trackera i radia, ustawienia, przeróbka innych urządzeń MeshCore |
+| [docs/PROTOCOL.md](docs/PROTOCOL.md) | format meldunku i używane ramki protokołu MeshCore |
+
 ## Czego potrzebujesz
 
 | Co | Uwagi |
 |---|---|
 | Telefon z Androidem 10 lub nowszym | Bluetooth LE |
-| Tracker | SenseCAP T1000-E z firmware [meshcore-tracker](https://github.com/qbarteczek/meshcore-tracker) – [docs/FIRMWARE.md](docs/FIRMWARE.md) |
+| Tracker | SenseCAP T1000-E z firmware [meshcore-tracker](https://github.com/qbarteczek/meshcore-tracker) |
 | Radio przy sobie | dowolny **companion MeshCore z Bluetooth**, z ustawionym kanałem trackera |
 | Organic Maps | opcjonalnie, do oglądania śladu w pełnej aplikacji mapowej |
 
+Autor używa: SenseCAP T1000-E jako trackera i Seeed XIAO nRF52840 + Wio-SX1262 jako radia w kieszeni, do tego
+repeater na dachu i węzeł w domu (Heltec LoRa 32 V2), które przekazują pozycje na domowy serwer.
+To jedna z wielu możliwych konfiguracji – radiem może być dowolny companion MeshCore, a repeater i dom są
+opcjonalne. Szczegóły i inne warianty: [docs/SPRZET.md](docs/SPRZET.md).
+
+## Firmware i aktualizacje MeshCore
+
+Firmware trackera jest forkiem MeshCore: <https://github.com/qbarteczek/meshcore-tracker>. **Wraz z kolejnymi
+wydaniami MeshCore będą tam publikowane zaktualizowane wersje firmware dla TrackDog** – zmiany trackera są
+przenoszone na nową wersję MeshCore, budowane i udostępniane w `release/` jako gotowe pliki `.uf2`.
+Nazwa pliku mówi, na czym jest oparty: `t1000e_tracker-v1.18.0-trk7` = MeshCore 1.18.0 + 7. wersja trackera.
+
+- Radio przy sobie, repeater i węzeł w domu używają **oryginalnego firmware MeshCore** i aktualizuje się je
+  normalnie, ze strony MeshCore – TrackDog niczego w nich nie zmienia.
+- Aktualizacja trackera zachowuje jego klucze, kanały i ustawienia.
+- Format meldunku jest rozszerzany tak, żeby starsza aplikacja rozumiała nowszy firmware i odwrotnie
+  ([docs/PROTOCOL.md](docs/PROTOCOL.md)). Aplikację i firmware można więc aktualizować niezależnie.
+
 ## Pierwsze uruchomienie
+
+Pełny opis krok po kroku: [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md). W skrócie:
 
 1. Wgraj firmware trackera i ustaw kanał na trackerze i na radiu – [docs/FIRMWARE.md](docs/FIRMWARE.md).
 2. Zainstaluj TrackDog (plik APK z wydań albo zbuduj sam – niżej).

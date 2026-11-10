@@ -5,6 +5,19 @@ TrackDog jest tylko odbiornikiem. Meldunki nadaje tracker z firmware
 dla Seeed SenseCAP T1000-E. Pełny opis: `TRACKER.md` w tamtym repozytorium; tutaj skrót potrzebny do uruchomienia
 TrackDog i wskazówki, jak przerobić inne urządzenia MeshCore.
 
+## Aktualizacje razem z MeshCore
+
+Wraz z kolejnymi wydaniami MeshCore w repozytorium meshcore-tracker będą publikowane zaktualizowane wersje
+firmware trackera: zmiany TrackDog są przenoszone na nową wersję MeshCore (`upstream` =
+`meshcore-dev/MeshCore`), budowane i udostępniane w `release/`. Nazwa pliku podaje obie wersje:
+`t1000e_tracker-v1.18.0-trk7` = MeshCore 1.18.0 + 7. wersja trybu trackera.
+
+- Aktualizować trzeba tylko **tracker**. Radio przy sobie, repeater i węzeł w domu mają oryginalny firmware
+  MeshCore i biorą aktualizacje prosto od MeshCore.
+- Po dużej zmianie w MeshCore (np. nowy format pakietów) zaktualizuj wszystkie urządzenia do zgodnych wersji –
+  tracker musi „mówić” tą samą wersją protokołu radiowego co radio i repeater.
+- Aktualizacja zachowuje klucze, kontakty, kanały i ustawienia trackera.
+
 Nazwy w opisie są umowne: **TRK1** – tracker, **RPT1** – repeater w zasięgu domu, **BAZA1** – węzeł w domu,
 **RADIO** – companion noszony przy sobie.
 
