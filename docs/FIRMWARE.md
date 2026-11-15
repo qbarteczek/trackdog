@@ -2,7 +2,7 @@
 
 TrackDog jest tylko odbiornikiem. Meldunki nadaje tracker z firmware
 **[meshcore-tracker](https://github.com/qbarteczek/meshcore-tracker)** – forkiem MeshCore (MIT) z trybem trackera
-dla Seeed SenseCAP T1000-E. Pełny opis: `TRACKER.md` w tamtym repozytorium; tutaj skrót potrzebny do uruchomienia
+dla Seeed SenseCAP T1000-E, podpiętym tutaj jako submoduł [firmware/meshcore-tracker](../firmware/). Pełny opis: `TRACKER.md` w tamtym repozytorium; tutaj skrót potrzebny do uruchomienia
 TrackDog i wskazówki, jak przerobić inne urządzenia MeshCore.
 
 ## Aktualizacje razem z MeshCore

@@ -7,3 +7,12 @@ local.properties
 *.iml
 captures/
 *.rar
+
+# radio tools: channel secrets and contact backups stay private
+*.secret
+contacts-*.json
+__pycache__/
+# FEM results are regenerated
+hardware/*/testy-wytrzymalosci/wyniki/*.gcode
+hardware/*/testy-wytrzymalosci/wyniki/*.vtu
+*.gcode

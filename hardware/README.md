@@ -6,7 +6,7 @@ opis całego zestawu w [docs/SPRZET.md](../docs/SPRZET.md).
 | Folder | Co | Stan |
 |---|---|---|
 | [radio-xiao-molle/](radio-xiao-molle/) | obudowa radia przy sobie (XIAO nRF52840 + Wio-SX1262, bateria LiPo 4000 mAh, gniazdo SMA, USB-C) na MOLLE/PALS, jedna listwa z zatrzaskiem | projekt gotowy, testy pasowania i MES zrobione, czeka na wydruk próbny |
-| obudowa trackera T1000-E | obudowa trackera na kamizelkę MOLLE psa albo obrożę | w repozytorium firmware: [meshcore-tracker/obudowa](https://github.com/qbarteczek/meshcore-tracker/tree/main/obudowa) |
+| [tracker-t1000e/](tracker-t1000e/) | obudowa trackera SenseCAP T1000-E na kamizelkę MOLLE psa albo obrożę (podstawa, ramka, 2 listwy z zatrzaskiem, okno ładowania), schemat montażu, rendery | wydrukowana i używana (v3); przeniesiona 2026-11-15 z repozytorium firmware |
 
 ## Zasady dla nowych części
 

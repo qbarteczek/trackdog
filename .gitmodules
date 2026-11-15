@@ -1,0 +1,5 @@
+[submodule "firmware/meshcore-tracker"]
+	path = firmware/meshcore-tracker
+	url = https://github.com/qbarteczek/meshcore-tracker.git
+	branch = main
+	shallow = true

@@ -1,0 +1,254 @@
+<title>Montaż trackera na MOLLE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of figures read top to bottom, each with a numbered step list beside it on wide screens */
+:root {
+  --bg: #f3f2ec; --panel: #fbfaf6; --fg: #23251f; --muted: #6b6c60; --line: #cfccbd;
+  --fabric: #9c8a63; --strap: #6f5b35; --strap-edge: #4b3c20;
+  --case: #2f6e70; --case-light: #8fbcbc; --frame: #d48a2c; --card: #4a4d52; --stick: #1d1f1c;
+  --warn: #a8431f; --warn-bg: #f6e3d8;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1c18; --panel: #23241f; --fg: #e9e7dd; --muted: #a5a395; --line: #3c3d34;
+  --fabric: #6e6146; --strap: #a88b55; --strap-edge: #d1b37a;
+  --case: #3f9a9c; --case-light: #2c5b5c; --frame: #e09a3c; --card: #8a8f96; --stick: #f0eee4;
+  --warn: #f08a62; --warn-bg: #3a2419; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1b1c18; --panel: #23241f; --fg: #e9e7dd; --muted: #a5a395; --line: #3c3d34;
+  --fabric: #6e6146; --strap: #a88b55; --strap-edge: #d1b37a;
+  --case: #3f9a9c; --case-light: #2c5b5c; --frame: #e09a3c; --card: #8a8f96; --stick: #f0eee4;
+  --warn: #f08a62; --warn-bg: #3a2419; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+main { max-width: 980px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 36px; }
+h1, h2 { font-family: var(--display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(30px, 5vw, 44px); }
+h2 { font-size: 26px; }
+p { margin: 0; max-width: 68ch; }
+.lead { color: var(--muted); font-size: 17px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 10px; }
+section { display: grid; gap: 14px; }
+figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.scroll { overflow-x: auto; }
+figcaption { font-size: 14px; color: var(--muted); max-width: 80ch; }
+svg { display: block; height: auto; }
+svg text { font-family: var(--body); font-size: 13px; fill: var(--fg); }
+svg .dim { font-family: var(--mono); font-size: 11.5px; fill: var(--muted); }
+svg .lbl { font-weight: 600; }
+.fab { fill: var(--fabric); } .strap { fill: var(--strap); stroke: var(--strap-edge); stroke-width: 1; }
+.case { fill: var(--case); } .caseg { fill: var(--case); opacity: .45; } .frame { fill: var(--frame); }
+.card { fill: var(--card); } .stick { fill: var(--stick); } .hole { fill: var(--panel); }
+.lead-line { stroke: var(--muted); stroke-width: 1; fill: none; }
+.ghost { fill: none; stroke: var(--case); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.stitch { stroke: var(--strap-edge); stroke-width: 2; stroke-dasharray: 3 3; }
+.steps { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+.steps li::before { counter-increment: s; content: counter(s); font-family: var(--display); font-weight: 700; font-size: 20px;
+  width: 30px; height: 30px; border-radius: 50%; background: var(--case); color: var(--panel); display: grid; place-items: center; }
+.steps b { font-weight: 600; }
+.two { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .two { grid-template-columns: 1.15fr 1fr; align-items: start; } }
+.note { border-left: 4px solid var(--warn); background: var(--warn-bg); padding: 14px 16px; border-radius: 0 6px 6px 0; display: grid; gap: 8px; }
+.note h2 { font-size: 21px; color: var(--warn); }
+.note ul, .plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+table { border-collapse: collapse; font-size: 15px; min-width: 520px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 16px; height: 12px; border-radius: 2px; display: inline-block; }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">tracker-psa · obudowa T1000-E · wariant MOLLE</div>
+    <h1>Montaż trackera na kamizelce MOLLE</h1>
+    <p class="lead">Obudowa nie ma klipsów do zapięcia na pasku. Trzymają ją dwie płaskie listwy wsuwane w poprzek grzbietu. Każda listwa przechodzi naprzemiennie przez bloczek obudowy i pod paskiem kamizelki. Pasek dociska listwę, a listwa trzyma obudowę za mostki w bloczkach. Tak samo działają klipsy „Malice” w sprzęcie wojskowym.</p>
+    <div class="legend" aria-label="Legenda kolorów">
+      <span><i style="background:var(--fabric)"></i>materiał kamizelki</span>
+      <span><i style="background:var(--strap)"></i>paski MOLLE</span>
+      <span><i style="background:var(--case)"></i>podstawa obudowy z bloczkami</span>
+      <span><i style="background:var(--stick)"></i>listwa (PETG)</span>
+      <span><i style="background:var(--card)"></i>tracker</span>
+      <span><i style="background:var(--frame)"></i>ramka</span>
+    </div>
+  </header>
+
+  <section class="two">
+    <figure>
+      <img src="schemat-zakladanie.png" alt="Widok rozstrzelony: obudowa nad kamizelką ze strzałkami w dół, dwie listwy z boku ze strzałkami do otworów w bloczkach" width="1400" height="1000">
+      <figcaption>Zakładanie. Render z modelu, z tymi samymi wymiarami co pliki STL.</figcaption>
+    </figure>
+    <div style="display:grid; gap:12px">
+      <h2>Zakładanie</h2>
+      <ol class="steps">
+        <li><span><b>Przyłóż obudowę</b> do kamizelki. Trzy bloczki z tyłu (pomarańczowe pola to otwory na listwy) wchodzą w przerwy między paskami.</span></li>
+        <li><span><b>Wsuń obie listwy grotem naprzód</b> w otwory pierwszego bloczka i pchaj dalej: pod pasek, przez środkowy bloczek, pod drugi pasek i przez ostatni bloczek.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="two">
+    <figure>
+      <img src="schemat-zdejmowanie.png" alt="Widok od spodu po złożeniu: listwy pod paskami, strzałki ściskające ramiona grotu i strzałki wyciągania za główkę" width="1400" height="1000">
+      <figcaption>Po złożeniu, widok od strony psa (materiał kamizelki ukryty). Listwy leżą między mostkami bloczków a paskami.</figcaption>
+    </figure>
+    <div style="display:grid; gap:12px">
+      <h2>Blokada i zdejmowanie</h2>
+      <ol class="steps" style="counter-reset: s 2">
+        <li><span><b>Klik.</b> Za ostatnim bloczkiem ramiona grotu rozchylają się i listwa nie cofa się. Z drugiej strony trzyma ją główka, szersza od otworu. Żeby zdjąć, <b>ściśnij oba ramiona grotu</b> (czerwone strzałki do środka).</span></li>
+        <li><span><b>Wyciągnij listwę za główkę</b>, z drugiej strony obudowy. Potem drugą listwę.</span></li>
+      </ol>
+      <p style="color:var(--muted); font-size:15px">Ładowanie: zdejmij obudowę z kamizelki i przyłóż kabel magnetyczny do okna z tyłu podstawy, między listwami. Trackera nie trzeba wyjmować ani niczego odkręcać.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Przekrój w poprzek grzbietu</h2>
+    <figure>
+      <div class="scroll">
+      <!-- scale 7 px/mm; x = 110 + y*7 (y across the dog), py = 200 - z*7 -->
+      <svg viewBox="0 0 820 300" width="820" role="img" aria-label="Przekrój: listwa przechodzi przez trzy bloczki i pod dwoma paskami kamizelki">
+        <rect class="fab" x="20" y="200" width="780" height="14"/>
+        <!-- straps lie ON the stick -->
+        <rect class="strap" x="176.5" y="153.1" width="175" height="14"/>
+        <rect class="strap" x="421.5" y="153.1" width="175" height="14"/>
+        <!-- blocks (bridge 0-2, tunnel 2-5, above up to 7.6) -->
+        <rect class="case" x="110" y="146.8" width="63" height="53.2"/>
+        <rect class="case" x="355" y="146.8" width="63" height="53.2"/>
+        <rect class="case" x="600" y="146.8" width="63" height="53.2"/>
+        <rect class="hole" x="109" y="165" width="65" height="21"/>
+        <rect class="hole" x="354" y="165" width="65" height="21"/>
+        <rect class="hole" x="599" y="165" width="65" height="21"/>
+        <!-- wings plate and body -->
+        <rect class="case" x="110" y="125.8" width="553" height="21"/>
+        <rect class="case" x="170.9" y="91.5" width="431.2" height="35"/>
+        <rect class="card" x="194" y="91.5" width="385" height="44.1"/>
+        <rect class="frame" x="170.9" y="77.5" width="431.2" height="14"/>
+        <!-- stick: head, body, arrow -->
+        <rect class="stick" x="66.6" y="167.1" width="42" height="16.8" rx="3"/>
+        <rect class="stick" x="108.6" y="167.1" width="556" height="16.8"/>
+        <polygon class="stick" points="664.4,167.1 762,170 762,181 664.4,183.9"/>
+        <!-- labels -->
+        <path class="lead-line" d="M87 167 L87 120 L40 120"/><text x="22" y="114" class="lbl">główka</text>
+        <path class="lead-line" d="M720 170 L740 120 L760 120"/><text x="690" y="114" class="lbl">grot</text>
+        <path class="lead-line" d="M264 153 L264 60 L300 60"/><text x="304" y="64" class="lbl">pasek kamizelki leży na listwie</text>
+        <path class="lead-line" d="M386 194 L386 250 L420 250"/><text x="424" y="254" class="lbl">mostek bloczka pod listwą (2 mm) – za niego listwa trzyma obudowę</text>
+        <path class="lead-line" d="M560 85 L560 40 L590 40"/><text x="594" y="44" class="lbl">ramka</text>
+        <path class="lead-line" d="M480 113 L480 22 L510 22"/><text x="514" y="26" class="lbl">T1000-E</text>
+        <text x="113" y="278" class="dim">bloczek 9</text><text x="240" y="278" class="dim">pasek 25</text>
+        <text x="358" y="278" class="dim">bloczek 9</text><text x="486" y="278" class="dim">pasek 25</text><text x="603" y="278" class="dim">bloczek 9</text>
+        <text x="22" y="296" class="dim">skala 7 px = 1 mm · wysokość całości ok. 17,5 mm nad materiałem</text>
+      </svg>
+      </div>
+      <figcaption>Od materiału w górę: mostek bloczka, listwa, pasek kamizelki, a nad paskiem 0,6 mm luzu i płyta obudowy. W bloczkach listwa leży na mostku, a między bloczkami biegnie pod paskiem. Gdy ktoś (albo gałąź) ciągnie obudowę, mostki opierają się o listwę, a listwę przytrzymują paski przyszyte do kamizelki.</figcaption>
+    </figure>
+  </section>
+
+  <section class="two">
+    <figure>
+      <div class="scroll">
+      <!-- top view, scale 4 px/mm; px = 70 + (y+10)*4 ; py = 40 + (x+20)*4 -->
+      <svg viewBox="0 0 520 600" width="520" role="img" aria-label="Widok z góry: dwie listwy w poprzek, pod dwoma pionowymi paskami">
+        <rect class="fab" x="40" y="20" width="460" height="560" rx="4" opacity=".55"/>
+        <!-- sticks at x=26.75 and 64.85 (axis), 18 wide -->
+        <g class="stick">
+          <rect x="85.2" y="171" width="24" height="96" rx="3"/>
+          <rect x="109.2" y="183" width="317.6" height="72"/>
+          <polygon points="426.8,180.8 482.8,193 482.8,245 426.8,257.2"/>
+          <rect x="85.2" y="323.4" width="24" height="96" rx="3"/>
+          <rect x="109.2" y="335.4" width="317.6" height="72"/>
+          <polygon points="426.8,333.2 482.8,345.4 482.8,397.4 426.8,409.6"/>
+        </g>
+        <rect class="hole" x="418" y="214" width="66" height="10.4"/>
+        <rect class="hole" x="418" y="366.4" width="66" height="10.4"/>
+        <!-- blocks -->
+        <rect class="caseg" x="110" y="122" width="36" height="364.4"/>
+        <rect class="caseg" x="250" y="122" width="36" height="364.4"/>
+        <rect class="caseg" x="390" y="122" width="36" height="364.4"/>
+        <!-- straps along the spine, on top of sticks -->
+        <rect class="strap" x="148" y="20" width="100" height="560" opacity=".9"/>
+        <rect class="strap" x="288" y="20" width="100" height="560" opacity=".9"/>
+        <g class="stitch">
+          <line x1="148" y1="150.8" x2="248" y2="150.8"/><line x1="288" y1="150.8" x2="388" y2="150.8"/>
+          <line x1="148" y1="303.2" x2="248" y2="303.2"/><line x1="288" y1="303.2" x2="388" y2="303.2"/>
+          <line x1="148" y1="455.6" x2="248" y2="455.6"/><line x1="288" y1="455.6" x2="388" y2="455.6"/>
+        </g>
+        <!-- case outline -->
+        <rect class="ghost" x="144.8" y="120" width="246.4" height="366.4" rx="6"/>
+        <text x="44" y="14" class="dim">↑ głowa psa · paski biegną wzdłuż kręgosłupa</text>
+        <text x="40" y="598" class="dim">przerywane linie na paskach = szwy co 38,1 mm (1,5")</text>
+      </svg>
+      </div>
+      <figcaption>Widok z góry, obudowa zaznaczona przerywanym obrysem. Listwy biegną w poprzek grzbietu i każda wchodzi w inną pętlę, czyli w odcinek paska między szwami. Odstęp listew to 38,1 mm, tyle co odstęp szwów.</figcaption>
+    </figure>
+
+    <div style="display:grid; gap:12px">
+      <h2>Dlaczego listwa nie wypadnie</h2>
+      <ul class="plain">
+        <li>W każdym z trzech bloczków listwa przechodzi przez <b>zamknięty otwór</b> (18,6 × 3,0 mm), więc nie może wypaść na boki ani do góry.</li>
+        <li><b>Główka</b> (24 mm) nie mieści się w otworze, więc listwa nie przejdzie dalej.</li>
+        <li><b>Grot</b> po rozchyleniu ma 21,6 mm, a zaczep opiera się płasko o bloczek, więc listwa nie cofnie się, dopóki go nie ściśniesz (ramiona 40 mm, ok. 4,5 N na ramię w PETG).</li>
+        <li><b>Pasek kamizelki</b> dociska listwę do mostków bloczków, więc obudowa nie odstaje.</li>
+        <li><b>Okno do ładowania</b> (10 × 26 mm) leży nad pinami trackera, w przerwie między bloczkami, i nie przecina otworów na listwy. Ładuj po wysunięciu listew i zdjęciu z kamizelki.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Widok z boku: pasek musi się unieść</h2>
+    <figure>
+      <div class="scroll">
+      <!-- side view along the spine; px = 40 + (x+45)*4 ; py = 150 - z*8 (vertical ×2) -->
+      <svg viewBox="0 0 780 220" width="780" role="img" aria-label="Pasek kamizelki przyszyty co 38,1 mm unosi się nad listwami">
+        <rect class="fab" x="20" y="150" width="750" height="16"/>
+        <rect class="caseg" x="220" y="10" width="366.4" height="79.2" rx="4"/>
+        <rect class="stick" x="291" y="112.4" width="72" height="19.2"/>
+        <rect class="stick" x="443.4" y="112.4" width="72" height="19.2"/>
+        <path d="M78.4 142 L250.8 142 L291 104.4 L363 104.4 L403.2 142 L443.4 104.4 L515.4 104.4 L555.6 142 L708 142" fill="none" stroke="var(--strap)" stroke-width="14" stroke-linejoin="round"/>
+        <g class="stitch"><line x1="98.4" y1="134" x2="98.4" y2="150"/><line x1="250.8" y1="134" x2="250.8" y2="150"/><line x1="403.2" y1="134" x2="403.2" y2="150"/><line x1="555.6" y1="134" x2="555.6" y2="150"/><line x1="708" y1="134" x2="708" y2="150"/></g>
+        <path class="lead-line" d="M327 104 L327 70 L355 70"/><text x="96" y="58" class="lbl">tu pasek unosi się ok. 4,7 mm nad materiał</text>
+        <text x="236" y="40" class="lbl" style="fill:var(--panel)">obudowa (płyta tylna)</text>
+        <text x="250" y="190" class="dim">szew</text><text x="392" y="190" class="dim">szew</text><text x="544" y="190" class="dim">szew</text>
+        <text x="300" y="210" class="dim">listwa 18 mm</text><text x="20" y="210" class="dim">skala pozioma 4 px = 1 mm, pionowa ×2</text>
+      </svg>
+      </div>
+      <figcaption>Odcinek paska między dwoma szwami (38,1 mm) ma unieść się nad listwą na wysokość mostka i listwy, czyli ok. 4,7 mm. Pętla musi mieć na to ok. 2 mm zapasu długości. Na luźnych pętlach (mieści się pod nimi palec) wejdzie łatwo, a na bardzo ciasnych może się nie zmieścić.</figcaption>
+    </figure>
+  </section>
+
+  <section class="note">
+    <h2>Zanim wydrukujesz, sprawdź na kamizelce</h2>
+    <ul>
+      <li><b>Kierunek pasków.</b> Model zakłada paski <b>wzdłuż kręgosłupa</b>. W wielu kamizelkach rzędy MOLLE biegną w poprzek grzbietu. Wtedy obudowę trzeba obrócić o 90° względem bloczków. Zrobię to, gdy podasz, jak jest u Ciebie.</li>
+      <li><b>Wymiary:</b> szerokość paska i przerwy między paskami, odstęp szwów, grubość taśmy. Każdy z nich zmienia się jednym parametrem w modelu (tabela niżej).</li>
+      <li><b>Luz pętli:</b> wsuń pod pasek coś o grubości ok. 5 mm, np. dwie złożone karty płatnicze. Jeśli wchodzi, listwa też wejdzie.</li>
+      <li><b>Druk:</b> listwy i podstawę drukuj z <b>PETG</b>. Grot musi sprężynować, a PLA pęka przy wielokrotnym ściskaniu. Wydrukuj zapasowe listwy.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Parametry do zmierzenia</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Parametr w modelu</th><th>Co zmierzyć</th><th>Teraz</th></tr></thead>
+        <tbody>
+          <tr><td class="num">pas_szer</td><td>szerokość paska taśmy</td><td class="num">25 mm</td></tr>
+          <tr><td class="num">pas_przerwa</td><td>przerwa między sąsiednimi paskami (tu wchodzą bloczki)</td><td class="num">10 mm</td></tr>
+          <tr><td class="num">petla_rozstaw</td><td>odstęp między szwami na pasku</td><td class="num">38,1 mm</td></tr>
+          <tr><td class="num">pas_grub</td><td>grubość taśmy paska</td><td class="num">2,0 mm</td></tr>
+          <tr><td class="num">pas_ile</td><td>pod iloma paskami idzie listwa (bloczków jest o 1 więcej)</td><td class="num">2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--muted); font-size:14px">Pliki: tracker-psa/obudowa/t1000e-obroza.scad i schemat-montazu.scad. Poprawki z 19.10.2026: prześwit na pasek nad listwą, mostek 3 → 2 mm, otwory na listwy wycinane po zaokrągleniu (wcześniej zaokrąglanie otwierało je od spodu), okno do ładowania przesunięte między listwy.</p>
+  </section>
+</main>

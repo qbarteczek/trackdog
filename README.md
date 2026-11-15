@@ -59,7 +59,9 @@ MeshCore).
 | [docs/SPRZET.md](docs/SPRZET.md) | **sprzęt**: co jest potrzebne, zestaw używany przez autora, inne możliwe konfiguracje |
 | [docs/FIRMWARE.md](docs/FIRMWARE.md) | firmware trackera i radia, ustawienia, przeróbka innych urządzeń MeshCore |
 | [docs/PROTOCOL.md](docs/PROTOCOL.md) | format meldunku i używane ramki protokołu MeshCore |
-| [hardware/](hardware/) | **obudowy do druku** z testami pasowania i wytrzymałości (MES), np. obudowa radia XIAO + Wio-SX1262 z baterią 4000 mAh na MOLLE |
+| [hardware/](hardware/) | **obudowy do druku** z testami pasowania i wytrzymałości (MES): tracker T1000-E na MOLLE/obrożę, radio XIAO + Wio-SX1262 z baterią 4000 mAh na MOLLE |
+| [firmware/](firmware/) | firmware trackera jako submoduł [meshcore-tracker](https://github.com/qbarteczek/meshcore-tracker) |
+| [tools/](tools/) | mapa offline (`make_map.sh`), [narzędzia radiowe](tools/radio/) do konfiguracji trackera i kanału z PC, usuwanie GPS z EXIF zdjęć |
 
 ## Czego potrzebujesz
 
