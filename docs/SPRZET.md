@@ -30,7 +30,7 @@ Ten zestaw jest używany na co dzień i na nim powstaje aplikacja.
 | Rola | Sprzęt | Firmware | Uwagi |
 |---|---|---|---|
 | Tracker na psie | Seeed SenseCAP T1000-E (nRF52840 + LR1110, GPS, akcelerometr, brzęczyk, bateria 700 mAh, IP65) | meshcore-tracker `t1000e_tracker` | w drukowanej obudowie na kamizelce lub obroży (`obudowa/` w repozytorium firmware) |
-| Radio przy sobie (2 szt.) | Seeed XIAO nRF52840 + Wio-SX1262 (zestaw), mała bateria Li-Po, antena 868 MHz | MeshCore companion BLE v1.18.0 | jedno w kieszeni, drugie zapasowe / dla drugiej osoby |
+| Radio przy sobie (2 szt.) | Seeed XIAO nRF52840 + Wio-SX1262 (zestaw), bateria Li-Po (do 4000 mAh), antena 868 MHz na SMA | MeshCore companion BLE v1.18.0 | jedno w kieszeni, drugie zapasowe / dla drugiej osoby; obudowa na MOLLE: [hardware/radio-xiao-molle](../hardware/radio-xiao-molle/) |
 | Repeater | nRF52 + SX1262, panel słoneczny 5 W, na dachu | MeshCore repeater | przekazuje meldunki do domu; nie jest potrzebny do pracy aplikacji |
 | Węzeł w domu | Heltec LoRa 32 V2 na USB w serwerze | MeshCore companion USB | własny skrypt przekazuje pozycje do Traccara i Home Assistanta |
 | Telefon | Android z Bluetooth LE | TrackDog | |

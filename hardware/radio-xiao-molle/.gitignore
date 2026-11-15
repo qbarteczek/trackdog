@@ -1,0 +1,7 @@
+# wyniki MES: zostają rysunki PNG, G-code i pola do ParaView odtwarza testuj.py
+testy-wytrzymalosci/wyniki/*.gcode
+testy-wytrzymalosci/wyniki/*.vtu
+testy-wytrzymalosci/wyniki/*.log
+testy-wytrzymalosci/log_*.txt
+__pycache__/
+testy-wytrzymalosci/wyniki/*.json
