@@ -35,10 +35,24 @@ Tracker sam decyduje, jak często melduje:
 | Stan | Odstęp | Kiedy |
 |---|---|---|
 | stoi | 5 min | 3 minuty bez przesunięcia o 40 m |
-| idzie | 1 min | pies się przemieszcza |
-| biegnie | 30 s | prędkość powyżej 7 km/h (firmware trk7) |
+| idzie (spacer) | 30 s | pies się przemieszcza (firmware trk8; trk7: 1 min) |
+| biegnie | 20 s | prędkość powyżej 7 km/h (trk8; trk7: 30 s) |
+| śpi | 2 h | godzina bez ruchu (trk8): GPS wyłączony, tylko meldunek kontrolny z pozycją |
 
-Gdy pies ruszy z postoju, akcelerometr budzi tracker od razu (trk7), więc nie czekasz 5 minut na pierwszą pozycję.
+Gdy pies ruszy z postoju albo ze snu, akcelerometr budzi tracker od razu (trk7/trk8), więc nie czekasz na pierwszą pozycję.
+Bieg co 20 s to 12 % czasu nadawania; pasmo pozwala na 10 % w ciągu godziny, więc przy bardzo długim biegu
+tracker sam wydłuża odstęp do 30 s (trk8).
+
+### Ustawienia trackera (zakładka Urządzenie)
+
+**Ustawienia trackera…** zmienia odstępy meldunków bez komputera i bez aplikacji MeshCore:
+
+1. Przytrzymaj przycisk trackera 2–6 s (3 mrugnięcia): otworzy się okno Bluetooth na 10 minut.
+2. W TrackDog: *Ustawienia trackera… → Szukaj trackera* i wybierz tracker z listy (za pierwszym razem PIN).
+3. Zmień odstępy (bieg, spacer, postój, sen po bezruchu, meldunek w czasie snu) i *Zapisz w trackerze*.
+   TrackDog odczytuje je z powrotem, więc widzisz, co tracker przyjął. Pod polami jest czas nadawania w %.
+
+To samo okno ma wersja na komputer. Tracker nie przyjmuje ustawień przez radio, tylko w tym oknie Bluetooth.
 
 ### Zakładka Kompas
 
@@ -87,6 +101,9 @@ Bateria trackera: 2 krótkie sygnały przy 20 %, 3 sygnały przy 10 % (wtedy mel
 - Ładowanie trackera: kabel magnetyczny. Według obliczeń przy 2 godzinach spaceru dziennie bateria wystarcza
   na kilka dni – sprawdź u siebie.
 - Ślad zostaje w telefonie. **Urządzenie → Usuń zapisany ślad** kasuje wszystko.
+- **Urządzenie → Eksportuj meldunki (na komputer)** zapisuje całą bazę w `Pobrane/TrackDog/trackdog-RRRR-MM-DD.db`.
+  Ten plik wczytuje [TrackDog na komputer](../desktop/README.md) (*Import z telefonu…*) albo inny telefon
+  (*Importuj meldunki z pliku*). Meldunki, które już są, zostają pominięte, więc import można powtarzać.
 
 ## 6. Gdy coś nie działa
 

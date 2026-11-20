@@ -19,6 +19,7 @@
     <string name="st_moving">idzie</string>
     <string name="st_fast">biegnie</string>
     <string name="st_still">stoi</string>
+    <string name="st_asleep">śpi</string>
     <string name="st_ok">OK</string>
     <string name="st_sos">SOS</string>
     <string name="st_no_gps">brak GPS</string>
@@ -51,11 +52,18 @@
     <string name="btn_pick">Wybierz radio (Bluetooth)</string>
     <string name="btn_disconnect">Rozłącz</string>
     <string name="btn_clear">Usuń zapisany ślad</string>
+    <string name="btn_export_db">Eksportuj meldunki (na komputer)</string>
+    <string name="btn_import_db">Importuj meldunki z pliku</string>
+    <string name="export_done">Zapisano w Pobrane/TrackDog: %s</string>
+    <string name="import_done">Zaimportowano %1$d nowych meldunków (%2$d w pliku).</string>
+    <string name="import_bad">To nie jest baza TrackDog.</string>
     <string name="clear_confirm">Usunąć z telefonu wszystkie zapisane meldunki?</string>
     <string name="yes">Usuń</string>
     <string name="no">Anuluj</string>
     <string name="tracker_auto">automatycznie (ostatnio słyszany)</string>
     <string name="scan_title">Szukam radia MeshCore…</string>
+    <string name="paired_suffix"> · sparowane</string>
+    <string name="scan_nothing">Bluetooth nie widzi żadnego urządzenia. Wyłącz i włącz Bluetooth (albo przełóż adapter).</string>
     <string name="scan_hint">Wybierz radio, które nosisz przy sobie – nigdy sam tracker.</string>
     <string name="demo_switch">Tryb pokazowy (symulowany spacer)</string>
     <string name="info_text">TrackDog odbiera meldunki, które tracker wysyła na swój prywatny kanał MeshCore. Telefon łączy się przez Bluetooth z radiem, które nosisz przy sobie; aplikacja utrzymuje połączenie w tle, od razu zabiera każdy meldunek z radia i zapisuje ślad w telefonie.\n\nKanał musi być ustawiony na radiu (oficjalna aplikacja MeshCore). TrackDog niczego nie nadaje przez LoRa, a z internetu korzysta tylko przy pobieraniu mapy na Twoje życzenie.</string>
@@ -91,4 +99,26 @@
     <string name="notif_sos">%s: SOS!</string>
     <string name="notif_low">%s: słaba bateria trackera</string>
     <string name="notif_idle">Nasłuch trackera</string>
+    <!-- tracker settings over Bluetooth (firmware meshcore-tracker trk8) -->
+    <string name="btn_tracker_settings">Ustawienia trackera…</string>
+    <string name="ts_title">Ustawienia trackera</string>
+    <string name="ts_open_hint">Przytrzymaj przycisk trackera 2–6 s (3 mrugnięcia): otworzy się okno Bluetooth na 10 minut. Potem wybierz tracker z listy.</string>
+    <string name="ts_search">Szukaj trackera</string>
+    <string name="ts_connecting">Łączenie z trackerem…</string>
+    <string name="ts_failed">Nie udało się połączyć z trackerem. Czy okno Bluetooth jest otwarte (przycisk 2–6 s, 3 mrugnięcia)?</string>
+    <string name="ts_not_tracker">To radio nie ma trybu trackera.</string>
+    <string name="ts_old_fw">Ten tracker ma starszy firmware: sen i meldunek kontrolny działają od trk8.</string>
+    <string name="ts_fast">Bieg (powyżej 7 km/h), co</string>
+    <string name="ts_move">Spacer, co</string>
+    <string name="ts_still">Postój, co</string>
+    <string name="ts_nap">Sen po bezruchu</string>
+    <string name="ts_beat">Meldunek w czasie snu, co</string>
+    <string name="ts_unit_s">s</string>
+    <string name="ts_unit_min">min</string>
+    <string name="ts_nap_hint">0 = bez snu. Ze snu budzi ruch (akcelerometr) albo przycisk.</string>
+    <string name="ts_air">Nadawanie: bieg %1$d%%, spacer %2$d%% czasu. Limit pasma to 10%% na godzinę; przy długim biegu tracker sam wydłuży odstęp.</string>
+    <string name="ts_save">Zapisz w trackerze</string>
+    <string name="ts_saving">Zapisywanie…</string>
+    <string name="ts_saved">Zapisano w trackerze.</string>
+    <string name="ts_save_failed">Tracker nie przyjął ustawień. Spróbuj ponownie.</string>
 </resources>

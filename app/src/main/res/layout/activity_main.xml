@@ -303,6 +303,7 @@
 
                 <Button android:id="@+id/btnPick" style="@style/Btn" android:text="@string/btn_pick" />
                 <Button android:id="@+id/btnDisconnect" style="@style/Btn.Ghost" android:text="@string/btn_disconnect" />
+                <Button android:id="@+id/btnTrackerSettings" style="@style/Btn.Ghost" android:text="@string/btn_tracker_settings" />
 
                 <LinearLayout
                     android:id="@+id/cardTracker"
@@ -357,6 +358,8 @@
                     android:textColor="@color/muted"
                     android:textSize="14sp" />
 
+                <Button android:id="@+id/btnExport" style="@style/Btn.Ghost" android:text="@string/btn_export_db" />
+                <Button android:id="@+id/btnImport" style="@style/Btn.Ghost" android:text="@string/btn_import_db" />
                 <Button android:id="@+id/btnClear" style="@style/Btn.Ghost" android:text="@string/btn_clear" />
 
                 <TextView

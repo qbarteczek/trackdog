@@ -1,7 +1,8 @@
 # TrackDog
 
 Natywna aplikacja na Androida do śledzenia psa z trackerem LoRa w sieci [MeshCore](https://github.com/meshcore-dev/MeshCore) –
-bez internetu, bez karty SIM i bez abonamentu.
+bez internetu, bez karty SIM i bez abonamentu. Od wersji 0.3 także **na komputer z Linuksem i Windows**
+([desktop/](desktop/)).
 
 ![Ekrany TrackDog: kompas, ślad, urządzenie](docs/screenshots/trackdog.png)
 
@@ -9,7 +10,9 @@ bez internetu, bez karty SIM i bez abonamentu.
 with the [meshcore-tracker](https://github.com/qbarteczek/meshcore-tracker) firmware). The phone connects over
 Bluetooth to the MeshCore companion radio you carry, takes every position report out of it the moment it arrives,
 stores the trail on the phone and shows distance and direction to the dog on a compass. No internet, no SIM, no
-account. The trail is drawn on an offline vector map inside the app (Mapsforge, OpenStreetMap data) and can be
+account. A desktop version for Linux and Windows ([desktop/](desktop/), Python + Qt) receives the same reports over
+Bluetooth, USB or TCP and shares the trail database with the phone. The trail is drawn on an offline vector map
+inside the app (Mapsforge, OpenStreetMap data) and can be
 handed to Organic Maps as a GPX track. MIT licence; the only library is Mapsforge.
 
 ## Jak to działa
@@ -28,7 +31,7 @@ tracker na psie (T1000-E) ──LoRa──► radio MeshCore w kieszeni (compani
 Punkt 3 rozwiązuje dwa kłopoty, od których zaczął się ten projekt: meldunki nie zalegają w małej pamięci radia
 (kolejka companiona mieści 256 wiadomości i nie przetrwa restartu) i zostaje po nich **ślad**.
 
-## Co potrafi wersja 0.2
+## Co potrafi wersja 0.3
 
 - **Kompas** – tarcza obraca się z telefonem, głowa psa na obwodzie pokazuje kierunek, w środku odległość.
   Pod spodem: stan (idzie / biegnie / stoi / SOS), wiek meldunku, prędkość, bateria, satelity, temperatura, sygnał.
@@ -46,6 +49,8 @@ Punkt 3 rozwiązuje dwa kłopoty, od których zaczął się ten projekt: meldunk
 - **Zakładki** przełącza się przyciskami na dole albo przesunięciem palca w bok (na mapie przesunięcie rusza mapą).
 - **Powiadomienia** – stały pasek z ostatnim meldunkiem, osobny alarm przy SOS i słabej baterii trackera.
 - **Tryb pokazowy** – symulowany spacer, żeby obejrzeć aplikację bez sprzętu.
+- **Eksport i import meldunków** (od 0.3) – cała baza do pliku `Pobrane/TrackDog/trackdog-RRRR-MM-DD.db` i z powrotem;
+  tak spacery przechodzą między telefonem a [wersją na komputer](desktop/) i innym telefonem, bez dublowania.
 - Polski i angielski. Bez kont i bez reklam. Z internetu aplikacja korzysta tylko wtedy, gdy każesz jej pobrać mapę.
 
 Aplikacja niczego nie nadaje przez LoRa i nie zmienia ustawień radia (poza ustawieniem zegara, jak każda aplikacja
@@ -56,6 +61,7 @@ MeshCore).
 | Dokument | Co w nim jest |
 |---|---|
 | [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md) | **instrukcja użytkowania**: przygotowanie, spacer, ekrany, przycisk trackera, rozwiązywanie kłopotów |
+| [desktop/README.md](desktop/README.md) | **wersja na komputer** (Linux, Windows): instalacja, połączenie z radiem, przenoszenie spacerów |
 | [docs/SPRZET.md](docs/SPRZET.md) | **sprzęt**: co jest potrzebne, zestaw używany przez autora, inne możliwe konfiguracje |
 | [docs/FIRMWARE.md](docs/FIRMWARE.md) | firmware trackera i radia, ustawienia, przeróbka innych urządzeń MeshCore |
 | [docs/PROTOCOL.md](docs/PROTOCOL.md) | format meldunku i używane ramki protokołu MeshCore |
@@ -109,10 +115,24 @@ Potrzebne: JDK 17 i Android SDK (platforma 34). Jedyna zależność poza framewo
 
 ```
 ./gradlew assembleDebug          # app/build/outputs/apk/debug/app-debug.apk
-./gradlew testDebugUnitTest      # testy parsera meldunków i obliczeń śladu
+./gradlew testDebugUnitTest      # wspólne wektory testowe (shared/vectors.json): parser, ślad, GPX
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n pl.qbart.trackdog/.MainActivity --ez demo true    # od razu tryb pokazowy
 ```
+
+## Jedna aplikacja, dwie wersje
+
+Aplikacja na Androida ([app/](app/), Kotlin) i wersja na komputer ([desktop/](desktop/), Python + Qt) robią to samo
+i **każda poprawka trafia do obu naraz**, w tym samym commicie, z tym samym numerem wersji. Pilnują tego:
+
+- [shared/vectors.json](shared/vectors.json) – wspólne przypadki testowe: parser meldunku, statystyki śladu,
+  geometria, formaty, plik GPX co do bajtu. Sprawdza je `./gradlew testDebugUnitTest`
+  ([SharedVectorsTest.kt](app/src/test/java/pl/qbart/trackdog/SharedVectorsTest.kt)) i
+  `python -m unittest discover -s tests` w `desktop/`. Zmiana formatu meldunku albo reguł śladu zaczyna się tutaj;
+  wersja, która jej nie dostała, nie przejdzie testów.
+- ta sama tabela SQLite (`Store.SCHEMA` / `store.py`) – bazy obu wersji łączą się wprost,
+- wspólne napisy: wersja na komputer czyta `strings.xml` Androida (teksty tylko komputerowe ma w `tdd/i18n.py`),
+- [docs/PROTOCOL.md](docs/PROTOCOL.md) – jeden opis meldunku i ramek companiona.
 
 ## Wydania i aktualizacje
 
@@ -128,6 +148,10 @@ Wydanie buduje `./gradlew assembleRelease`; folder z kluczem (`trackdog.keystore
 zmienna `TRACKDOG_SIGNING`. Bez klucza to polecenie kończy się błędem, żeby nie powstał plik z innym podpisem.
 Kto buduje sam (`assembleDebug`), podpisuje własnym kluczem – taka kopia nie zaktualizuje wydania autora ani
 odwrotnie; trzeba wtedy raz odinstalować poprzednią.
+
+Wersję na komputer buduje `desktop/build.py` na systemie docelowym: na Linuksie `TrackDog-x.y.z-linux-x86_64.tar.gz`,
+na Windows instalator `TrackDog-Setup-x.y.z.exe`. Paczki mają 90–100 MB, więc trafiają do wydań na GitHubie,
+nie do repozytorium. Numer wersji (`desktop/tdd/__init__.py`) jest ten sam co `versionName` aplikacji.
 
 ## Kod
 

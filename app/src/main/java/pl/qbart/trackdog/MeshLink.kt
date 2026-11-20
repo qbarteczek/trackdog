@@ -24,7 +24,8 @@ import java.util.UUID
  * Speaks the companion protocol over the Nordic UART service: one BLE write / notification = one frame.
  * The link only listens: it takes every waiting message out of the companion as soon as it arrives
  * (so the companion's small queue never fills up) and hands channel texts to the listener.
- * It never transmits anything over LoRa.
+ * It never transmits anything over LoRa. The tracker settings screen uses it to read and write the custom
+ * vars of a tracker in its configuration window.
  *
  * All callbacks of [Listener] come on the main thread.
  */
@@ -39,6 +40,10 @@ class MeshLink(ctx: Context, private val listener: Listener) {
         fun onBaseBattery(millivolts: Int)
         /** a text from any channel; [senderTime] in seconds, [snr] in dB */
         fun onChannelText(text: String, senderTime: Long, snr: Double?)
+        /** answer to [requestCustomVars]: the radio's custom vars (a tracker's settings among them) */
+        fun onCustomVars(vars: Map<String, String>) {}
+        /** answer to a command that only says yes or no ([setCustomVar], also the clock set at connecting) */
+        fun onCommandResult(ok: Boolean) {}
     }
 
     private val app = ctx.applicationContext
@@ -277,8 +282,19 @@ class MeshLink(ctx: Context, private val listener: Listener) {
             // private messages and channel data are not ours, but they must leave the queue too
             RESP_CONTACT_MSG, RESP_CONTACT_MSG_V3, RESP_CHANNEL_DATA -> next()
             RESP_NO_MORE -> syncing = false
+            RESP_OK -> listener.onCommandResult(true)
+            RESP_ERR -> listener.onCommandResult(false)
+            RESP_CUSTOM_VARS -> listener.onCustomVars(TrackerSettings.parseVars(String(b, 1, b.size - 1)))
             PUSH_MSG_WAITING -> sync()
         }
+    }
+
+    fun requestCustomVars() {
+        if (ready) send(byteArrayOf(CMD_GET_CUSTOM_VARS))
+    }
+
+    fun setCustomVar(name: String, value: String) {
+        if (ready) send(byteArrayOf(CMD_SET_CUSTOM_VAR) + "$name:$value".toByteArray())
     }
 
     private fun next() {
@@ -340,6 +356,11 @@ class MeshLink(ctx: Context, private val listener: Listener) {
         private const val CMD_SYNC_NEXT: Byte = 10
         private const val CMD_GET_BATT: Byte = 20
         private const val CMD_DEVICE_QUERY: Byte = 22
+        private const val CMD_GET_CUSTOM_VARS: Byte = 40
+        private const val CMD_SET_CUSTOM_VAR: Byte = 41
+        private const val RESP_OK = 0
+        private const val RESP_ERR = 1
+        private const val RESP_CUSTOM_VARS = 21
         private const val RESP_SELF_INFO = 5
         private const val RESP_CONTACT_MSG = 7
         private const val RESP_CHANNEL_MSG = 8

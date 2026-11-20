@@ -28,12 +28,13 @@ Gotowe pliki są w `release/` repozytorium meshcore-tracker:
 | Plik | Co to |
 |---|---|
 | `t1000e_tracker-v1.18.0-trk6.uf2` / `-dfu.zip` | wersja sprawdzona na spacerach: meldunek co 60 s w ruchu, co 300 s w postoju |
-| `t1000e_tracker-v1.18.0-trk7.uf2` / `-dfu.zip` | **nowa, jeszcze nie sprawdzona na urządzeniu**: prędkość i kurs z GPS, krótszy odstęp przy szybkim ruchu, akcelerometr |
+| `t1000e_tracker-v1.18.0-trk7.uf2` / `-dfu.zip` | prędkość i kurs z GPS, krótszy odstęp przy szybkim ruchu, akcelerometr (działa na urządzeniu, bez testu na spacerze) |
+| `t1000e_tracker-v1.18.0-trk8.uf2` / `-dfu.zip` | **nowa, jeszcze nie wgrana na urządzenie**: spacer co 30 s, bieg co 20 s, sen po godzinie bezruchu, pilnowanie limitu nadawania |
 
 Wgrywanie: dwuklik przycisku przy podłączaniu USB → pojawia się dysk bootloadera → skopiuj plik `.uf2`.
 Klucze, kontakty i kanały zostają. Powrót do zwykłego MeshCore: wgraj oryginalny companion.
 
-Konfiguracja (aplikacja MeshCore w oknie Bluetooth trackera albo `set_custom_var`):
+Konfiguracja: TrackDog (*Ustawienia trackera…*), aplikacja MeshCore w oknie Bluetooth trackera albo `set_custom_var`:
 
 | Zmienna | Wartość |
 |---|---|
@@ -41,12 +42,25 @@ Konfiguracja (aplikacja MeshCore w oknie Bluetooth trackera albo `set_custom_var
 | `trk_ch` | nazwa kanału z meldunkami (domyślnie `Pies`) |
 | `trk_path` | trasa pierwszej kopii przez repeater, np. `a1`; `-` = tylko zero-hop |
 | `trk_still` | odstęp w postoju, s (300) |
-| `trk_move` | odstęp w ruchu, s (60) |
-| `trk_fast` | odstęp powyżej 7 km/h, s (30) – od trk7 |
-| `trk_acc` | `1` – akcelerometr budzi tracker z postoju – od trk7 |
+| `trk_move` | odstęp na spacerze, s (30 od trk8, wcześniej 60) |
+| `trk_fast` | odstęp w biegu, powyżej 7 km/h, s (20 od trk8, w trk7 30) – od trk7 |
+| `trk_acc` | `1` – akcelerometr budzi tracker z postoju i ze snu – od trk7 |
+| `trk_nap` | minuty bez ruchu do snu (60; `0` = bez snu) – od trk8 |
+| `trk_beat` | meldunek kontrolny w czasie snu, min (120) – od trk8 |
 
 Kanał (nazwa + 16-bajtowy sekret) musi być dodany na trackerze i na każdym odbiorniku. Sekret jest kluczem do
 pozycji psa – nie publikuj go.
+
+### Co zmienia trk8
+
+- **Krótsze odstępy**: spacer 30 s, bieg 20 s (postój bez zmian, 300 s). Przy aktualizacji z trk6/trk7 ustawienia
+  zostają, ale stare wartości domyślne (60/30) zmieniają się na nowe.
+- **Limit nadawania**: dwie kopie meldunku to ~2,4 s nadawania: co 30 s = 8 %, co 20 s = 12 %, a pasmo
+  869,4–869,65 MHz pozwala na 10 % w ciągu godziny. Tracker liczy własny czas nadawania z ostatniej godziny i powyżej
+  85 % limitu wydłuża krótsze odstępy do 30 s. Przy zwykłych zrywach psa nie zadziała.
+- **Sen**: po `trk_nap` minutach bez ruchu meldunek `śpi`, GPS wyłączony, potem meldunek kontrolny `śpi` (z pozycją)
+  co `trk_beat` minut. Budzi go 2 s ciągłego ruchu (akcelerometr) albo przycisk; po pobudce przez 3 minuty
+  traktuje się jak „idzie”.
 
 ### Co zmienia trk7
 

@@ -1,0 +1,148 @@
+{
+  "_": "Shared test vectors: every TrackDog version (Android app/src/test, desktop desktop/tests) must pass all of them. A change of the report format or of the trail rules goes here first, then into every version.",
+  "parse": [
+    {
+      "name": "old firmware without speed",
+      "text": "TRK1: idzie 93% 4,18V 9,3°C 12sat nr81 https://maps.google.com/?q=52.22970,21.01220",
+      "snr": -7.5,
+      "expect": {"tracker": "TRK1", "status": "idzie", "battPct": 93, "battMv": 4180, "tempC": 9.3, "sats": 12,
+        "seq": 81, "lat": 52.2297, "lon": 21.0122, "hasFix": true, "hasPos": true, "stale": false,
+        "speedKmh": null, "course": null, "activity": null, "lowBatt": false, "snr": -7.5}
+    },
+    {
+      "name": "speed, course, activity, negative values",
+      "text": "TRK1: idzie 80% 4,00V -2,5°C 9sat 12,4km/h k270 a37 nr7 https://maps.google.com/?q=52.10000,-0.50000",
+      "expect": {"speedKmh": 12.4, "course": 270, "activity": 37, "tempC": -2.5, "lon": -0.5, "seq": 7, "snr": null}
+    },
+    {
+      "name": "no fix keeps the last position as stale",
+      "text": "TRK1: brak GPS 55% 3,82V 21,0°C a0 nr12 ost. https://maps.google.com/?q=52.22970,21.01220",
+      "expect": {"status": "brak GPS", "stale": true, "hasPos": true, "hasFix": false, "sats": null, "activity": 0}
+    },
+    {
+      "name": "stale marker on a status with a position",
+      "text": "TRK1: stoi 70% 3,95V 15,0°C a1 nr40 ost. https://maps.google.com/?q=52.22970,21.01220",
+      "expect": {"status": "stoi", "stale": true, "hasFix": false}
+    },
+    {
+      "name": "asleep (firmware trk8): heartbeat with a fix",
+      "text": "TRK1: śpi 88% 4,10V 12,0°C 8sat 0,0km/h a0 nr120 https://maps.google.com/?q=52.22970,21.01220",
+      "expect": {"status": "śpi", "hasFix": true, "stale": false, "speedKmh": 0.0, "activity": 0, "seq": 120}
+    },
+    {
+      "name": "asleep without a fix keeps the last position",
+      "text": "TRK1: śpi 87% 4,09V 11,5°C a0 nr121 ost. https://maps.google.com/?q=52.22970,21.01220",
+      "expect": {"status": "śpi", "hasFix": false, "stale": true, "hasPos": true}
+    },
+    {
+      "name": "no position at all",
+      "text": "TRK1: start 100% 4,20V 20,0°C nr1",
+      "expect": {"status": "start", "hasPos": false, "lat": null, "lon": null, "battPct": 100, "battMv": 4200}
+    },
+    {
+      "name": "SOS, low battery, name with spaces and emoji",
+      "text": "Pies 🐕: SOS 9% 3,45V 5,0°C 7sat bateria! nr300 https://maps.google.com/?q=52.00000,21.00000",
+      "expect": {"tracker": "Pies 🐕", "status": "SOS", "sos": true, "lowBatt": true, "seq": 300}
+    },
+    {
+      "name": "OK after the button, dot decimals",
+      "text": "TRK1: OK 50% 3.80V 10.5°C 8sat 0.0km/h a3 nr9 https://maps.google.com/?q=52.00000,21.00000",
+      "expect": {"status": "OK", "battMv": 3800, "tempC": 10.5, "speedKmh": 0.0}
+    },
+    {
+      "name": "position out of range is dropped",
+      "text": "TRK1: idzie 50% 3,80V 10,0°C 8sat nr9 https://maps.google.com/?q=95.00000,21.00000",
+      "expect": {"hasPos": false, "lat": null}
+    },
+    {
+      "name": "course out of range is dropped",
+      "text": "TRK1: idzie 50% 3,80V 10,0°C 8sat 5,0km/h k400 nr9 https://maps.google.com/?q=52.00000,21.00000",
+      "expect": {"course": null, "speedKmh": 5.0}
+    },
+    {"name": "chat 1", "text": "Ala: idziemy na spacer", "expect": null},
+    {"name": "chat 2", "text": "Ala: stoi pod sklepem", "expect": null},
+    {"name": "no sender", "text": "no sender", "expect": null},
+    {"name": "status without counter", "text": "Ala: OK", "expect": null}
+  ],
+  "trail": [
+    {
+      "name": "distance, moving time, speed from positions, lost reports",
+      "reports": [
+        {"min": 0, "lat": 52.000, "seq": 1},
+        {"min": 1, "lat": 52.001, "seq": 2},
+        {"min": 2, "lat": 52.002, "seq": 3},
+        {"min": 5, "lat": 52.002, "seq": 6, "status": "stoi"}
+      ],
+      "expect": {"distanceM": 222.4, "distanceTol": 1.0, "movingMs": 120000, "maxKmh": 6.67, "maxTol": 0.1,
+        "avgMovingKmh": 6.67, "lost": 2, "received": 4, "points": 4,
+        "speeds": [null, 6.67, 6.67, 0.0]}
+    },
+    {
+      "name": "a gap is not one movement, GPS noise while still, restart of the counter, report without fix",
+      "reports": [
+        {"min": 0, "lat": 52.000, "seq": 1},
+        {"min": 20, "lat": 52.001, "seq": 2},
+        {"min": 21, "lat": 52.00102, "seq": 3, "status": "stoi"},
+        {"min": 22, "lat": 52.002, "seq": 10},
+        {"min": 23, "lat": 52.002, "seq": 1, "status": "start"},
+        {"min": 24, "lat": 52.002, "seq": 2, "status": "brak GPS", "stale": true}
+      ],
+      "expect": {"distanceM": 108.97, "distanceTol": 0.5, "movingMs": 60000, "maxKmh": 6.54, "maxTol": 0.05,
+        "avgMovingKmh": 6.54, "lost": 6, "received": 6, "points": 5,
+        "speeds": [null, null, 0.133, 6.54, 0.0]}
+    },
+    {
+      "name": "speed from the tracker wins, nonsense speeds do not count as maximum",
+      "reports": [
+        {"min": 0, "lat": 52.000, "seq": 1, "speed": 4.0},
+        {"min": 1, "lat": 52.001, "seq": 2, "speed": 90.0},
+        {"min": 2, "lat": 52.002, "seq": 3, "speed": 5.5}
+      ],
+      "expect": {"distanceM": 222.4, "distanceTol": 1.0, "movingMs": 120000, "maxKmh": 5.5, "maxTol": 0.001,
+        "lost": 0, "received": 3, "points": 3, "speeds": [4.0, 90.0, 5.5]}
+    }
+  ],
+  "geo": {
+    "bearing": [[52.0, 21.0, 53.0, 21.0, 0.0], [0.0, 21.0, 0.0, 22.0, 90.0], [52.0, 21.0, 51.0, 21.0, 180.0]],
+    "bearingTol": 0.01,
+    "dist": [[52.0, 21.0, 53.0, 21.0, 111195.0], [52.0, 21.0, 52.0, 21.0, 0.0]],
+    "distTol": 50.0,
+    "cardinal": [[47.0, "NE"], [350.0, "N"], [-10.0, "N"], [180.0, "S"], [292.0, "W"], [293.0, "NW"]]
+  },
+  "format": {
+    "_": "texts for people (Fmt): language-independent ones",
+    "dist": [[0, "0 m"], [999, "999 m"], [1234, "1.23 km"], [12345, "12.3 km"]],
+    "duration": [[0, "0 min"], [3540000, "59 min"], [3600000, "1 h 0 min"], [5580000, "1 h 33 min"]]
+  },
+  "gpx": {
+    "_": "the GPX file of a trail (byte for byte): trail case by name, and the file name",
+    "trail": "a gap is not one movement, GPS noise while still, restart of the counter, report without fix",
+    "name": "trackdog-TRK1-<&>",
+    "expect": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"TrackDog\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n<trk><name>trackdog-TRK1-&lt;&amp;&gt;</name>\n<trkseg>\n<trkpt lat=\"52.000000\" lon=\"21.000000\"><time>2027-01-15T08:00:00Z</time></trkpt>\n</trkseg>\n<trkseg>\n<trkpt lat=\"52.001000\" lon=\"21.000000\"><time>2027-01-15T08:20:00Z</time></trkpt>\n<trkpt lat=\"52.001020\" lon=\"21.000000\"><time>2027-01-15T08:21:00Z</time><extensions><speed>0.04</speed></extensions></trkpt>\n<trkpt lat=\"52.002000\" lon=\"21.000000\"><time>2027-01-15T08:22:00Z</time><extensions><speed>1.82</speed></extensions></trkpt>\n<trkpt lat=\"52.002000\" lon=\"21.000000\"><time>2027-01-15T08:23:00Z</time><extensions><speed>0.00</speed></extensions></trkpt>\n</trkseg></trk>\n</gpx>\n"
+  },
+  "trackerSettings": {
+    "_": "Fields of the tracker settings screen = custom vars of firmware meshcore-tracker trk8 (TrackerMode.cpp): key, unit, range, default. A value typed in is clamped into the range. Airtime: 2 copies of ~1.2 s per report, in % of the time, rounded.",
+    "fields": [
+      {"key": "trk_fast", "unit": "s", "min": 15, "max": 3600, "default": 20},
+      {"key": "trk_move", "unit": "s", "min": 15, "max": 3600, "default": 30},
+      {"key": "trk_still", "unit": "s", "min": 15, "max": 3600, "default": 300},
+      {"key": "trk_nap", "unit": "min", "min": 0, "max": 1440, "default": 60},
+      {"key": "trk_beat", "unit": "min", "min": 15, "max": 1440, "default": 120}
+    ],
+    "clamp": [
+      {"key": "trk_fast", "in": 5, "out": 15},
+      {"key": "trk_move", "in": 30, "out": 30},
+      {"key": "trk_nap", "in": 0, "out": 0},
+      {"key": "trk_beat", "in": 5000, "out": 1440}
+    ],
+    "airtimePct": [
+      {"interval": 20, "pct": 12},
+      {"interval": 30, "pct": 8},
+      {"interval": 60, "pct": 4}
+    ],
+    "parseVars": {
+      "text": "gps:1,tracker:1,trk_ch:Pies,trk_path:a1,trk_move:30,trk_still:300,trk_fast:20,trk_acc:1,trk_nap:60,trk_beat:120",
+      "expect": {"gps": "1", "tracker": "1", "trk_ch": "Pies", "trk_path": "a1", "trk_move": "30", "trk_nap": "60", "trk_beat": "120"}
+    }
+  }
+}

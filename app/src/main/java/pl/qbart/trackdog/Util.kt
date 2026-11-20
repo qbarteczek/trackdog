@@ -21,6 +21,7 @@ object Fmt {
             Report.ST_START -> R.string.st_start
             Report.ST_MOVING -> if ((r.speedKmh ?: 0.0) >= FAST_KMH) R.string.st_fast else R.string.st_moving
             Report.ST_STILL -> R.string.st_still
+            Report.ST_ASLEEP -> R.string.st_asleep
             Report.ST_OK -> R.string.st_ok
             Report.ST_SOS -> R.string.st_sos
             else -> R.string.st_no_gps

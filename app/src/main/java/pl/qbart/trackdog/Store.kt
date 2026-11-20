@@ -5,36 +5,28 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.io.File
 
 /** The trail: every report ever received, on the phone only. */
 class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.db", null, 1) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(
-            """CREATE TABLE reports(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                t INTEGER NOT NULL, tracker TEXT NOT NULL, status TEXT NOT NULL,
-                lat REAL, lon REAL, stale INTEGER NOT NULL,
-                pct INTEGER, mv INTEGER, temp REAL, sats INTEGER,
-                speed REAL, course INTEGER, act INTEGER, seq INTEGER,
-                low INTEGER NOT NULL, snr REAL,
-                UNIQUE(tracker, t))"""
-        )
+        db.execSQL(SCHEMA)
         db.execSQL("CREATE INDEX reports_t ON reports(t)")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
 
     /** false = this report is already stored (the companion delivered it twice) */
-    fun insert(r: Report): Boolean {
-        val v = ContentValues().apply {
-            put("t", r.time); put("tracker", r.tracker); put("status", r.status)
-            put("lat", r.lat); put("lon", r.lon); put("stale", if (r.stale) 1 else 0)
-            put("pct", r.battPct); put("mv", r.battMv); put("temp", r.tempC); put("sats", r.sats)
-            put("speed", r.speedKmh); put("course", r.course); put("act", r.activity); put("seq", r.seq)
-            put("low", if (r.lowBatt) 1 else 0); put("snr", r.snr)
-        }
-        return writableDatabase.insertWithOnConflict("reports", null, v, SQLiteDatabase.CONFLICT_IGNORE) != -1L
+    fun insert(r: Report): Boolean =
+        writableDatabase.insertWithOnConflict("reports", null, values(r), SQLiteDatabase.CONFLICT_IGNORE) != -1L
+
+    private fun values(r: Report) = ContentValues().apply {
+        put("t", r.time); put("tracker", r.tracker); put("status", r.status)
+        put("lat", r.lat); put("lon", r.lon); put("stale", if (r.stale) 1 else 0)
+        put("pct", r.battPct); put("mv", r.battMv); put("temp", r.tempC); put("sats", r.sats)
+        put("speed", r.speedKmh); put("course", r.course); put("act", r.activity); put("seq", r.seq)
+        put("low", if (r.lowBatt) 1 else 0); put("snr", r.snr)
     }
 
     fun last(tracker: String?): Report? = query(
@@ -73,6 +65,49 @@ class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.d
         return out
     }
 
+    /**
+     * A standalone copy of the table in [file], for the computer (TrackDog desktop) or another phone.
+     * The same table as the desktop's store.py, so either side merges the other's file as it is.
+     */
+    fun exportTo(file: File) {
+        file.delete()
+        val out = SQLiteDatabase.openOrCreateDatabase(file, null)
+        try {
+            out.execSQL(SCHEMA)
+            out.beginTransaction()
+            try {
+                for (r in query(null, null, "t ASC", null)) out.insertWithOnConflict("reports", null, values(r), SQLiteDatabase.CONFLICT_IGNORE)
+                out.setTransactionSuccessful()
+            } finally {
+                out.endTransaction()
+            }
+        } finally {
+            out.close()
+        }
+    }
+
+    /** merges a TrackDog database from [file]; (new reports, reports in the file) */
+    fun mergeFrom(file: File): Pair<Int, Int> {
+        val src = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
+        val rows = try {
+            val out = ArrayList<Report>()
+            src.query("reports", null, null, null, null, null, "t ASC").use { c -> while (c.moveToNext()) out.add(read(c)) }
+            out
+        } finally {
+            src.close()
+        }
+        val db = writableDatabase
+        var added = 0
+        db.beginTransaction()
+        try {
+            for (r in rows) if (db.insertWithOnConflict("reports", null, values(r), SQLiteDatabase.CONFLICT_IGNORE) != -1L) added++
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+        return Pair(added, rows.size)
+    }
+
     fun count(): Long = readableDatabase.compileStatement("SELECT COUNT(*) FROM reports").simpleQueryForLong()
 
     fun clear() {
@@ -89,6 +124,18 @@ class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.d
             while (c.moveToNext()) out.add(read(c))
         }
         return out
+    }
+
+    companion object {
+        /** the same table in the desktop version (desktop/tdd/store.py) */
+        const val SCHEMA = """CREATE TABLE reports(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                t INTEGER NOT NULL, tracker TEXT NOT NULL, status TEXT NOT NULL,
+                lat REAL, lon REAL, stale INTEGER NOT NULL,
+                pct INTEGER, mv INTEGER, temp REAL, sats INTEGER,
+                speed REAL, course INTEGER, act INTEGER, seq INTEGER,
+                low INTEGER NOT NULL, snr REAL,
+                UNIQUE(tracker, t))"""
     }
 
     private fun read(c: Cursor): Report {

@@ -18,7 +18,7 @@ Options:
     --power DBM             transmit power
     --tracker               tracker firmware (meshcore-tracker): tracker=1, trk_ch, interval settings
     --path HEX              trk_path: route of the first copy through repeaters, 1 byte each (e.g. a1); - = zero-hop only
-    --move S / --still S / --fast S   intervals when moving / standing / above 7 km/h (defaults 60 / 300 / 30)
+    --move S / --still S / --fast S   intervals when walking / standing / above 7 km/h (defaults 30 / 300 / 20, firmware trk8)
     --pin PIN               BLE PIN for pairing (default 123456)
     --show                  only list channels and custom variables
 """
@@ -67,9 +67,9 @@ async def main():
     ap.add_argument("--power", type=int)
     ap.add_argument("--tracker", action="store_true")
     ap.add_argument("--path")
-    ap.add_argument("--move", default="60")
+    ap.add_argument("--move", default="30")
     ap.add_argument("--still", default="300")
-    ap.add_argument("--fast", default="30")
+    ap.add_argument("--fast", default="20")
     ap.add_argument("--pin", default="123456")
     ap.add_argument("--show", action="store_true")
     a = ap.parse_args()

@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -26,6 +27,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -150,6 +152,7 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         findViewById<View>(R.id.dayPrev).setOnClickListener { stepDay(-1) }
         findViewById<View>(R.id.dayNext).setOnClickListener { stepDay(1) }
         findViewById<View>(R.id.btnPick).setOnClickListener { pickRadio() }
+        findViewById<View>(R.id.btnTrackerSettings).setOnClickListener { trackerSettings() }
         findViewById<View>(R.id.btnDisconnect).setOnClickListener {
             prefs.mac = null
             prefs.macName = null
@@ -157,6 +160,10 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
             applyService()
         }
         findViewById<View>(R.id.cardTracker).setOnClickListener { pickTracker() }
+        findViewById<View>(R.id.btnExport).setOnClickListener { exportReports() }
+        findViewById<View>(R.id.btnImport).setOnClickListener {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"), REQ_IMPORT)
+        }
         findViewById<View>(R.id.btnClear).setOnClickListener {
             AlertDialog.Builder(this).setMessage(R.string.clear_confirm)
                 .setPositiveButton(R.string.yes) { _, _ ->
@@ -483,10 +490,64 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         }
     }
 
-    /** a .map file chosen by the user is copied into the app's own folder */
+    /** a copy of every stored report as a database in Downloads/TrackDog, for TrackDog on a computer */
+    private fun exportReports() {
+        Thread {
+            val name = "trackdog-" + SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(java.util.Date()) + ".db"
+            val tmp = File(cacheDir, name)
+            val ok = try {
+                store.exportTo(tmp)
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, name)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/vnd.sqlite3")
+                    put(MediaStore.Downloads.RELATIVE_PATH, "Download/TrackDog")
+                }
+                val u = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)!!
+                contentResolver.openOutputStream(u)!!.use { out -> tmp.inputStream().use { it.copyTo(out) } }
+                true
+            } catch (e: Exception) {
+                false
+            } finally {
+                tmp.delete()
+            }
+            runOnUiThread {
+                Toast.makeText(this, if (ok) getString(R.string.export_done, name) else getString(R.string.gpx_failed), Toast.LENGTH_LONG).show()
+            }
+        }.start()
+    }
+
+    /** reports from a database exported by TrackDog (desktop or another phone); the ones already here are skipped */
+    private fun importReports(uri: Uri) {
+        Thread {
+            val tmp = File(cacheDir, "import.db")
+            val result = try {
+                contentResolver.openInputStream(uri)!!.use { input -> tmp.outputStream().use { input.copyTo(it) } }
+                store.mergeFrom(tmp)
+            } catch (e: Exception) {
+                null
+            } finally {
+                tmp.delete()
+            }
+            runOnUiThread {
+                if (result == null) Toast.makeText(this, R.string.import_bad, Toast.LENGTH_LONG).show()
+                else {
+                    Toast.makeText(this, getString(R.string.import_done, result.first, result.second), Toast.LENGTH_LONG).show()
+                    Hub.revision++
+                    reload()
+                }
+            }
+        }.start()
+    }
+
+    /** a .map file chosen by the user is copied into the app's own folder; a database is merged */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val uri = data?.data
-        if (requestCode != REQ_MAP || resultCode != RESULT_OK || uri == null) return
+        if (resultCode != RESULT_OK || uri == null) return
+        if (requestCode == REQ_IMPORT) {
+            importReports(uri)
+            return
+        }
+        if (requestCode != REQ_MAP) return
         var name = "map.map"
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
             if (c.moveToFirst()) c.getString(0)?.let { name = it }
@@ -539,8 +600,27 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
 
     // ------------------------------------------------------------------ choosing the radio and the tracker
 
+    private fun pickRadio() = scanRadios(R.string.scan_title) { mac, name ->
+        prefs.mac = mac
+        prefs.macName = name
+        prefs.demo = false
+        Hub.baseName = name
+        applyService()
+        showTab(0)
+    }
+
+    /** report intervals of the tracker itself, over Bluetooth in its configuration window */
+    private fun trackerSettings() {
+        AlertDialog.Builder(this).setTitle(R.string.ts_title).setMessage(R.string.ts_open_hint)
+            .setPositiveButton(R.string.ts_search) { _, _ ->
+                scanRadios(R.string.ts_title) { mac, name -> TrackerSettingsDialog(this, mac, name) }
+            }
+            .setNegativeButton(R.string.no, null)
+            .show()
+    }
+
     @SuppressLint("MissingPermission")
-    private fun pickRadio() {
+    private fun scanRadios(title: Int, onPick: (mac: String, name: String) -> Unit) {
         if (!hasBluetooth() || (Build.VERSION.SDK_INT < 31 && !granted(Manifest.permission.ACCESS_FINE_LOCATION))) {
             Toast.makeText(this, R.string.perm_needed, Toast.LENGTH_LONG).show()
             askPermissions()
@@ -553,45 +633,52 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
             return
         }
         val names = ArrayList<String>()
+        val labels = ArrayList<String>()
         val macs = ArrayList<String>()
-        val list = ArrayAdapter(this, android.R.layout.simple_list_item_1, names)
+        val list = ArrayAdapter(this, android.R.layout.simple_list_item_1, labels)
         val view = ListView(this)
         val pad = (16 * resources.displayMetrics.density).toInt()
-        view.addHeaderView(TextView(this).apply {
+        val header = TextView(this).apply {
             setText(R.string.scan_hint)
             setTextColor(getColor(R.color.muted))
             setPadding(pad + pad / 2, pad / 2, pad, pad / 2)
-        }, null, false)
+        }
+        view.addHeaderView(header, null, false)
+        var heard = 0   // any device at all: none means a stuck Bluetooth adapter, not a missing radio
         view.adapter = list
+        // radios paired before are listed even when they do not advertise now (switched off, or busy with another device)
+        adapter.bondedDevices?.filter { (it.name ?: "").startsWith("MeshCore") }?.forEach {
+            macs += it.address
+            names += it.name.removePrefix("MeshCore-")
+            labels += it.name.removePrefix("MeshCore-") + getString(R.string.paired_suffix)
+        }
 
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
+                heard++
                 val name = result.scanRecord?.deviceName ?: result.device.name ?: return
                 val uart = result.scanRecord?.serviceUuids?.contains(ParcelUuid(MeshLink.UART)) == true
                 if (!name.startsWith("MeshCore") && !uart) return
                 if (result.device.address in macs) return
                 macs += result.device.address
                 names += name.removePrefix("MeshCore-")
+                labels += name.removePrefix("MeshCore-")
                 list.notifyDataSetChanged()
             }
         }
-        val dialog = AlertDialog.Builder(this).setTitle(R.string.scan_title).setView(view)
+        val dialog = AlertDialog.Builder(this).setTitle(title).setView(view)
             .setNegativeButton(R.string.no, null)
             .setOnDismissListener { runCatching { scanner.stopScan(callback) } }
             .create()
         view.setOnItemClickListener { _, _, position, _ ->
             val i = position - 1   // the hint is row 0
             if (i !in macs.indices) return@setOnItemClickListener
-            prefs.mac = macs[i]
-            prefs.macName = names[i]
-            prefs.demo = false
-            Hub.baseName = names[i]
             dialog.dismiss()
-            applyService()
-            showTab(0)
+            onPick(macs[i], names[i])
         }
         scanner.startScan(null, ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build(), callback)
         main.postDelayed({ runCatching { scanner.stopScan(callback) } }, 30_000)
+        main.postDelayed({ if (heard == 0 && dialog.isShowing) header.setText(R.string.scan_nothing) }, 12_000)
         dialog.show()
     }
 
@@ -660,6 +747,7 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
 
     companion object {
         private const val REQ_MAP = 2
+        private const val REQ_IMPORT = 3
         private const val MAP_NAME = "poland.map"
         private const val MAP_PART = "poland.map.download"
         // a mirror of download.mapsforge.org (the project asks to use mirrors for big files)

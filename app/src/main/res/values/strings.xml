@@ -21,6 +21,7 @@
     <string name="st_moving">walking</string>
     <string name="st_fast">running</string>
     <string name="st_still">resting</string>
+    <string name="st_asleep">asleep</string>
     <string name="st_ok">OK</string>
     <string name="st_sos">SOS</string>
     <string name="st_no_gps">no GPS fix</string>
@@ -53,11 +54,18 @@
     <string name="btn_pick">Choose the companion radio</string>
     <string name="btn_disconnect">Disconnect</string>
     <string name="btn_clear">Delete the stored trail</string>
+    <string name="btn_export_db">Export the reports (for the computer)</string>
+    <string name="btn_import_db">Import reports from a file</string>
+    <string name="export_done">Saved in Downloads/TrackDog: %s</string>
+    <string name="import_done">Imported %1$d new reports (%2$d in the file).</string>
+    <string name="import_bad">This file is not a TrackDog database.</string>
     <string name="clear_confirm">Delete all stored reports from this phone?</string>
     <string name="yes">Delete</string>
     <string name="no">Cancel</string>
     <string name="tracker_auto">automatic (last heard)</string>
     <string name="scan_title">Looking for MeshCore radios…</string>
+    <string name="paired_suffix"> · paired</string>
+    <string name="scan_nothing">Bluetooth sees no device at all. Switch Bluetooth off and on (or re-plug the adapter).</string>
     <string name="scan_hint">Choose the radio you carry, never the tracker itself.</string>
     <string name="demo_switch">Demo mode (simulated walk)</string>
     <string name="info_text">TrackDog listens to the reports your tracker posts on its private MeshCore channel. The phone connects by Bluetooth to the companion radio you carry; the app keeps the connection in the background, takes every report out of the radio at once and stores the trail on the phone.\n\nThe channel must be set on the companion radio (official MeshCore app). TrackDog never transmits over LoRa and uses the internet only to download a map when you ask for it.</string>
@@ -93,4 +101,26 @@
     <string name="notif_sos">%s: SOS!</string>
     <string name="notif_low">%s: tracker battery low</string>
     <string name="notif_idle">Listening for the tracker</string>
+    <!-- tracker settings over Bluetooth (firmware meshcore-tracker trk8) -->
+    <string name="btn_tracker_settings">Tracker settings…</string>
+    <string name="ts_title">Tracker settings</string>
+    <string name="ts_open_hint">Hold the tracker\'s button for 2–6 s (3 blinks): its Bluetooth window opens for 10 minutes. Then choose the tracker in the list.</string>
+    <string name="ts_search">Find the tracker</string>
+    <string name="ts_connecting">Connecting to the tracker…</string>
+    <string name="ts_failed">Could not connect to the tracker. Is its Bluetooth window open (button 2–6 s, 3 blinks)?</string>
+    <string name="ts_not_tracker">This radio has no tracker mode.</string>
+    <string name="ts_old_fw">This tracker has older firmware: the nap and the heartbeat need trk8.</string>
+    <string name="ts_fast">Running (above 7 km/h), every</string>
+    <string name="ts_move">Walking, every</string>
+    <string name="ts_still">Resting, every</string>
+    <string name="ts_nap">Nap after no movement for</string>
+    <string name="ts_beat">Heartbeat while napping, every</string>
+    <string name="ts_unit_s">s</string>
+    <string name="ts_unit_min">min</string>
+    <string name="ts_nap_hint">0 = no nap. Movement (accelerometer) or the button wakes it up.</string>
+    <string name="ts_air">Airtime: running %1$d%%, walking %2$d%%. The band allows 10%% per hour; on a long run the tracker stretches the interval itself.</string>
+    <string name="ts_save">Save to the tracker</string>
+    <string name="ts_saving">Saving…</string>
+    <string name="ts_saved">Saved to the tracker.</string>
+    <string name="ts_save_failed">The tracker did not take the settings. Try again.</string>
 </resources>

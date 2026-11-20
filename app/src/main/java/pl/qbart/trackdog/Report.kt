@@ -11,7 +11,7 @@ import kotlin.math.sqrt
 data class Report(
     val time: Long,            // ms since epoch (clock of the tracker, set from GPS)
     val tracker: String,       // node name of the tracker
-    val status: String,        // start, idzie, stoi, OK, SOS, brak GPS
+    val status: String,        // start, idzie, stoi, śpi, OK, SOS, brak GPS
     val lat: Double?,
     val lon: Double?,
     val stale: Boolean,        // the position is the last known one, not a fix of this report
@@ -36,6 +36,7 @@ data class Report(
         const val ST_START = "start"
         const val ST_MOVING = "idzie"
         const val ST_STILL = "stoi"
+        const val ST_ASLEEP = "śpi"        // firmware trk8: still for an hour, GPS off, heartbeat only
         const val ST_OK = "OK"
         const val ST_SOS = "SOS"
         const val ST_NO_GPS = "brak GPS"
@@ -52,7 +53,7 @@ data class Report(
  * (people talking) gives null.
  */
 object ReportParser {
-    private val STATUS = Regex("^(start|idzie|stoi|OK|SOS|brak GPS)(?= |$)")
+    private val STATUS = Regex("^(start|idzie|stoi|śpi|OK|SOS|brak GPS)(?= |$)")
     private val SEQ = Regex("(?:^| )nr(\\d+)(?= |$)")
     private val PCT = Regex("(?:^| )(\\d{1,3})%")
     private val VOLT = Regex("(?:^| )(\\d+)[,.](\\d+)V(?= |$)")

@@ -15,8 +15,8 @@ android {
         applicationId 'pl.qbart.trackdog'
         minSdk 29
         targetSdk 34
-        versionCode 2
-        versionName '0.2.0'
+        versionCode 3
+        versionName '0.3.0'
     }
 
     // Every build is signed with the one TrackDog key, so a new version always installs as an update of
@@ -64,6 +64,7 @@ dependencies {
     implementation 'org.mapsforge:mapsforge-map-reader:0.25.0'
     implementation 'org.mapsforge:mapsforge-themes:0.25.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'   // the shared test vectors (android.jar has only stubs)
 }
 
 // A release without the TrackDog key would not update installed copies: refuse to build it.
