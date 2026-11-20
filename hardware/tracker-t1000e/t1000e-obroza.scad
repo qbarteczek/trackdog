@@ -30,8 +30,8 @@ pas_ile       = 2;      // pod iloma paskami przechodzi listwa (bloczków jest o
 petla_rozstaw = 38.1;   // rozstaw szwów na pasku = rozstaw dwóch listew (MOLLE: 1,5")
 // listwa
 listwa_szer   = 18;     // musi wejść między szwy paska (< petla_rozstaw - szew)
-listwa_gr     = 2.4;
-luz_listwy    = 0.8;    // luz tunelu na grubość (szerokość: połowa tego na stronę); FDM: zwis stropu tunelu
+listwa_gr     = 3.2;    // 2,4 mm było za wiotkie (wydruk 2026-11-20)
+luz_listwy    = 0.4;    // luz tunelu na grubość i szerokość (0,2 mm na stronę); 0,8 mm - listwa latała w tunelu
 mostek_molle  = 2.0;    // grubość mostka pod listwą w bloczku (tyle pasek musi się unieść + listwa)
 pas_grub      = 2.0;    // grubość taśmy paska kamizelki (!) - pasek leży NA listwie
 luz_pasa      = 0.6;    // luz nad paskiem, pod płytą obudowy
@@ -97,13 +97,14 @@ otwory_front = [
     [52.6, 27.5, 10],   // brzęczyk: w obudowie karty jest otworek ok. 1 mm nad piezo Ø ok. 16 mm
 ];
 // ---------- Okno z tyłu na styki ładowania ----------
-// 4 piny pogo w pionowym rzędzie (kapsuła 17,3 x 5,2 mm z dwoma magnesami), 14 mm od długiego boku.
+// 4 piny pogo między dwoma magnesami w rzędzie wzdłuż karty, 14 mm od długiego boku.
 // Y: patrząc od frontu, oczko przy X = 0 - piny są przy Y = 55 - 14 (zdjęcie tyłu: oczko na dole, piny po prawej).
-// X: rysunek Seeed daje środek 35,6 mm od oczka, zdjęcie ok. 43 mm - okno obejmuje oba.
-okno_tyl_x  = 43.0;   // środek okna, od końca z oczkiem
+// X: zdjęcie karty (2026-11-20): magnesy 36 i 51 mm od oczka, kapsuła ok. 34-53 mm, środek 43,5.
+// Wydruk z oknem 26 mm (30-56) zasłaniał jeden magnes o ok. 5 mm, więc okno ma zapas 7 mm na stronę.
+okno_tyl_x  = 43.5;   // środek okna, od końca z oczkiem
 okno_tyl_y  = 41.0;
-okno_tyl_dl = 26;     // wzdłuż X: kapsuła 17,3 mm + rozrzut położenia + wtyczka
-okno_tyl_sz = 10;     // wzdłuż Y: kapsuła 5,2 mm + wtyczka; mieści się w przerwie między bloczkami MOLLE
+okno_tyl_dl = 34;     // wzdłuż X: kapsuła ok. 19 mm + 7 mm zapasu na stronę (wtyczka, odchyłki)
+okno_tyl_sz = 12;     // wzdłuż Y: kapsuła ok. 4 mm + wtyczka; mieści się w przerwie między bloczkami MOLLE
 okno_tyl_r  = 3;
 
 $fn = 48;

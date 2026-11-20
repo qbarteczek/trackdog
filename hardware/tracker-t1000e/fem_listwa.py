@@ -29,6 +29,7 @@ MATERIALY = {'PLA': (3200, 0.36, 0.020, 0.012), 'PETG': (1900, 0.38, 0.035, 0.02
 WARIANTY = {
     'v1 (stara)': dict(w=18, t=2.4, luz=0.6, wystep=1.0, s=2.6, Ls=12, grot=14),
     'v2 (nowa)':  dict(w=18, t=2.4, luz=0.8, wystep=1.4, s=6.0, Ls=40, grot=14),
+    'v4 (3,2 mm)': dict(w=18, t=3.2, luz=0.4, wystep=2.0, s=6.0, Ls=40, grot=14),
 }
 
 
@@ -115,7 +116,8 @@ def rysuj(ax, mesh, ib, u, e1, p, tytul, skala=1.0, vmax=None, zoom=None):
 
 if __name__ == '__main__':
     wyniki = {}
-    fig, axs = plt.subplots(1, 4, figsize=(17, 8.5), gridspec_kw=dict(width_ratios=[1, 1.25, 1, 1.25]))
+    n = len(WARIANTY)
+    fig, axs = plt.subplots(1, 2 * n, figsize=(8.5 * n, 8.5), gridspec_kw=dict(width_ratios=[1, 1.25] * n))
     for k, (nazwa, p) in enumerate(WARIANTY.items()):
         mesh, y0, gw = siatka(p)
         print(f"\n== {nazwa}: siatka {mesh.p.shape[1]} węzłów, {mesh.t.shape[1]} elementów")

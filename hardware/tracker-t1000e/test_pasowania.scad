@@ -15,10 +15,11 @@ module listwa_w_miejscu(x, dy = 0) {
     translate([x, molle_y0 - 0.2 + dy, mostek_molle + luz_listwy/2]) listwa();
 }
 
-// kapsuła 4 pinów + 2 magnesy (17,3 x 5,2 mm wg Seeed), wydłużona o rozrzut położenia z rysunku i zdjęcia
+// kapsuła 4 pinów + 2 magnesy wg zdjęcia karty (2026-11-20): 34-53 mm od oczka, 14,4 mm od boku,
+// z zapasem 3 mm na każdy koniec (odchyłka, którą pokazał wydruk z oknem 26 mm)
 module piny() {
-    translate([each nakarte(okno_tyl_x, okno_tyl_y), -5])
-        hull() for (dx = [-(17.3 + 6)/2 + 2.6, (17.3 + 6)/2 - 2.6]) translate([dx, 0, 0]) cylinder(d = 5.2, h = 40);
+    translate([each nakarte(43.5, 55 - 14.4), -5])
+        hull() for (dx = [-(19 + 6)/2 + 2.6, (19 + 6)/2 - 2.6]) translate([dx, 0, 0]) cylinder(d = 5.2, h = 40);
 }
 
 if (test == "listwa_zapieta")

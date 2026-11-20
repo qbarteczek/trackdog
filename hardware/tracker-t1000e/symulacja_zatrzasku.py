@@ -77,6 +77,8 @@ WARIANTY = {
                             przed_zaczepem=40, grot_dl=14, faza_tunelu=0.8),
     'v3 (zaczepy r 0,4)': dict(listwa_szer=18, listwa_gr=2.4, luz_listwy=0.8, grot_wystep=2.0, szczelina=6.0,
                                przed_zaczepem=40, grot_dl=14, faza_tunelu=0.8, r_zaczepu=0.4),
+    'v4 (3,2 mm, luz 0,4)': dict(listwa_szer=18, listwa_gr=3.2, luz_listwy=0.4, grot_wystep=2.0, szczelina=6.0,
+                                 przed_zaczepem=40, grot_dl=14, faza_tunelu=0.8, r_zaczepu=0.4),
 }
 
 if __name__ == '__main__':
