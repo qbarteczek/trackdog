@@ -11,7 +11,7 @@ import kotlin.math.sqrt
 data class Report(
     val time: Long,            // ms since epoch (clock of the tracker, set from GPS)
     val tracker: String,       // node name of the tracker
-    val status: String,        // start, idzie, stoi, śpi, OK, SOS, brak GPS
+    val status: String,        // start, idzie, stoi, śpi, OK, SOS, brak GPS, uderzenie, upadek, bezruch
     val lat: Double?,
     val lon: Double?,
     val stale: Boolean,        // the position is the last known one, not a fix of this report
@@ -26,10 +26,14 @@ data class Report(
     val lowBatt: Boolean,
     val snr: Double? = null,   // of the packet, as heard by the companion
     val id: Long = 0,
+    val hdop: Double? = null,  // trk10, with a fix
+    val posture: String? = null,   // trk10: pion / bok / grzbiet
+    val idleMin: Int? = null,  // trk10: minutes without motion (accelerometer)
 ) {
     val hasFix: Boolean get() = lat != null && lon != null && !stale
     val hasPos: Boolean get() = lat != null && lon != null
     val sos: Boolean get() = status == ST_SOS
+    val alarm: Boolean get() = status in ALARMS
     val moving: Boolean get() = status == ST_MOVING
 
     companion object {
@@ -40,6 +44,10 @@ data class Report(
         const val ST_OK = "OK"
         const val ST_SOS = "SOS"
         const val ST_NO_GPS = "brak GPS"
+        const val ST_IMPACT = "uderzenie"   // trk10: jolt, then the dog stays still
+        const val ST_FALL = "upadek"        // trk10: free fall, jolt, still
+        const val ST_IDLE = "bezruch"       // trk10: no motion for a long time away from home
+        val ALARMS = setOf(ST_SOS, ST_IMPACT, ST_FALL, ST_IDLE)
     }
 }
 
@@ -53,7 +61,7 @@ data class Report(
  * (people talking) gives null.
  */
 object ReportParser {
-    private val STATUS = Regex("^(start|idzie|stoi|śpi|OK|SOS|brak GPS)(?= |$)")
+    private val STATUS = Regex("^(start|idzie|stoi|śpi|OK|SOS|brak GPS|uderzenie|upadek|bezruch)(?= |$)")
     private val SEQ = Regex("(?:^| )nr(\\d+)(?= |$)")
     private val PCT = Regex("(?:^| )(\\d{1,3})%")
     private val VOLT = Regex("(?:^| )(\\d+)[,.](\\d+)V(?= |$)")
@@ -63,6 +71,9 @@ object ReportParser {
     private val COURSE = Regex("(?:^| )k(\\d{1,3})(?= |$)")
     private val ACT = Regex("(?:^| )a(\\d{1,2})(?= |$)")
     private val POS = Regex("[?&]q=(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)")
+    private val HDOP = Regex("(?:^| )hdop(\\d+(?:[,.]\\d+)?)(?= |$)")
+    private val POSTURE = Regex("(?:^| )(pion|bok|grzbiet)(?= |$)")
+    private val IDLE = Regex("(?:^| )bz(\\d+)(?= |$)")
 
     fun parse(text: String, timeMs: Long, snr: Double? = null): Report? {
         val cut = text.indexOf(": ")
@@ -95,6 +106,9 @@ object ReportParser {
             seq = seq,
             lowBatt = body.contains("bateria!"),
             snr = snr,
+            hdop = num(HDOP, body),
+            posture = POSTURE.find(body)?.groupValues?.get(1),
+            idleMin = IDLE.find(body)?.groupValues?.get(1)?.toIntOrNull(),
         )
     }
 

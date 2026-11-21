@@ -31,7 +31,12 @@ object TrackerSettings {
         Field("trk_still", R.string.ts_still, "s", 15, 3600, 300),
         Field("trk_nap", R.string.ts_nap, "min", 0, 1440, 60, trk8 = true),
         Field("trk_beat", R.string.ts_beat, "min", 15, 1440, 120, trk8 = true),
+        Field("trk_idle", R.string.ts_idle, "min", 0, 1440, 15, trk8 = true),
+        Field("trk_home_r", R.string.ts_home_r, "m", 30, 5000, 150, trk8 = true),
     )
+
+    /** trk_home for a position (trk10): saved only in the tracker, never in the repository */
+    fun homeValue(lat: Double, lon: Double): String = String.format(java.util.Locale.ROOT, "%.6f %.6f", lat, lon)
 
     fun clamp(key: String, value: Int): Int {
         val f = FIELDS.first { it.key == key }
@@ -50,12 +55,18 @@ object TrackerSettings {
 }
 
 /** The screen: connect to the chosen tracker, show its intervals, write the changed ones. */
-class TrackerSettingsDialog(private val act: Activity, mac: String, name: String) : MeshLink.Listener {
+class TrackerSettingsDialog(
+    private val act: Activity, mac: String, name: String,
+    private val myPosition: () -> Pair<Double, Double>?,   // phone GPS, for "home = my position"
+) : MeshLink.Listener {
     private val main = Handler(Looper.getMainLooper())
     private val link = MeshLink(act, this)
     private val status = TextView(act)
     private val air = TextView(act)
     private val edits = LinkedHashMap<String, EditText>()
+    private val homeState = TextView(act)
+    private val homeSet = android.widget.Button(act)
+    private val homeClear = android.widget.Button(act)
     private var vars: Map<String, String> = emptyMap()
     private var pending = 0          // answers still awaited while saving
     private var failed = false
@@ -88,13 +99,27 @@ class TrackerSettingsDialog(private val act: Activity, mac: String, name: String
             edits[f.key] = e
             row.addView(e)
             row.addView(TextView(act).apply {
-                text = act.getString(if (f.unit == "s") R.string.ts_unit_s else R.string.ts_unit_min)
+                text = act.getString(when (f.unit) { "s" -> R.string.ts_unit_s; "m" -> R.string.ts_unit_m; else -> R.string.ts_unit_min })
                 setPadding(pad / 2, 0, 0, 0)
             })
             box.addView(row)
         }
         val muted = act.getColor(R.color.muted)
         box.addView(TextView(act).apply { setText(R.string.ts_nap_hint); setTextColor(muted) })
+        // home (trk10): the "still" alarm and naps depend on it; saved only in the tracker
+        homeState.setTextColor(muted)
+        homeState.setPadding(0, pad / 2, 0, 0)
+        box.addView(homeState)
+        val homeRow = LinearLayout(act).apply { orientation = LinearLayout.HORIZONTAL }
+        homeSet.setText(R.string.ts_home_set)
+        homeClear.setText(R.string.ts_home_clear)
+        for (b in listOf(homeSet, homeClear)) { b.isEnabled = false; homeRow.addView(b) }
+        homeSet.setOnClickListener {
+            val p = myPosition()
+            if (p == null) status.setText(R.string.ts_home_nopos) else saveHome(TrackerSettings.homeValue(p.first, p.second))
+        }
+        homeClear.setOnClickListener { saveHome("-") }
+        box.addView(homeRow)
         air.setTextColor(muted)
         air.setPadding(0, pad / 2, 0, 0)
         box.addView(air)
@@ -120,6 +145,14 @@ class TrackerSettingsDialog(private val act: Activity, mac: String, name: String
         val fast = value("trk_fast") ?: return
         val move = value("trk_move") ?: return
         air.text = act.getString(R.string.ts_air, TrackerSettings.airtimePct(fast), TrackerSettings.airtimePct(move))
+    }
+
+    private fun saveHome(value: String) {
+        saving = true
+        failed = false
+        pending = 1
+        status.setText(R.string.ts_saving)
+        link.setCustomVar("trk_home", value)
     }
 
     private fun save() {
@@ -163,6 +196,10 @@ class TrackerSettingsDialog(private val act: Activity, mac: String, name: String
             if (v != null) e.setText(TrackerSettings.clamp(f.key, v).toString()) else old = true
             e.isEnabled = v != null
         }
+        val hasHome = "trk_home" in vars
+        homeSet.isEnabled = hasHome
+        homeClear.isEnabled = hasHome
+        homeState.text = if (!hasHome) "" else act.getString(if (vars["trk_home"] == "1") R.string.ts_home_on else R.string.ts_home_off)
         val done = if (saving) act.getString(R.string.ts_saved) else ""
         status.text = (done + if (old) " " + act.getString(R.string.ts_old_fw) else "").trim()
         saving = false

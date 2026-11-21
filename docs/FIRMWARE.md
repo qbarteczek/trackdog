@@ -29,7 +29,12 @@ Gotowe pliki są w `release/` repozytorium meshcore-tracker:
 |---|---|
 | `t1000e_tracker-v1.18.0-trk6.uf2` / `-dfu.zip` | wersja sprawdzona na spacerach: meldunek co 60 s w ruchu, co 300 s w postoju |
 | `t1000e_tracker-v1.18.0-trk7.uf2` / `-dfu.zip` | prędkość i kurs z GPS, krótszy odstęp przy szybkim ruchu, akcelerometr (działa na urządzeniu, bez testu na spacerze) |
-| `t1000e_tracker-v1.18.0-trk8.uf2` / `-dfu.zip` | **nowa, jeszcze nie wgrana na urządzenie**: spacer co 30 s, bieg co 20 s, sen po godzinie bezruchu, pilnowanie limitu nadawania |
+| `t1000e_tracker-v1.18.0-trk8.uf2` / `-dfu.zip` | spacer co 30 s, bieg co 20 s, sen po godzinie bezruchu, pilnowanie limitu nadawania |
+| `t1000e_tracker-v1.18.0-trk9.uf2` / `-dfu.zip` | bateria, temperatura i satelity w co dziesiątym meldunku |
+| `t1000e_tracker-v1.18.0-trk10.uf2` / `-dfu.zip` | **najnowsza** (wgrana, bez testu na spacerze): HDOP, położenie, czas bez ruchu, alarmy uderzenie/upadek/bezruch poza domem |
+
+**Nie zostawiaj trackera podłączonego do USB w trybie trackera**: po ok. 6 min restartuje się i zostaje w bootloaderze
+(tak też trk7). Na baterii działa bez przerw.
 
 Wgrywanie: dwuklik przycisku przy podłączaniu USB → pojawia się dysk bootloadera → skopiuj plik `.uf2`.
 Klucze, kontakty i kanały zostają. Powrót do zwykłego MeshCore: wgraj oryginalny companion.
@@ -47,6 +52,9 @@ Konfiguracja: TrackDog (*Ustawienia trackera…*), aplikacja MeshCore w oknie Bl
 | `trk_acc` | `1` – akcelerometr budzi tracker z postoju i ze snu – od trk7 |
 | `trk_nap` | minuty bez ruchu do snu (60; `0` = bez snu) – od trk8 |
 | `trk_beat` | meldunek kontrolny w czasie snu, min (120) – od trk8 |
+| `trk_idle` | alarm „bezruch” po tylu minutach bez ruchu poza domem (15; `0` = wyłączony) – od trk10 |
+| `trk_home` | pozycja domu `szer dł`, `-` = brak (TrackDog: *Dom = moja pozycja*) – od trk10 |
+| `trk_home_r` | promień domu, m (150) – od trk10 |
 
 Kanał (nazwa + 16-bajtowy sekret) musi być dodany na trackerze i na każdym odbiorniku. Sekret jest kluczem do
 pozycji psa – nie publikuj go.

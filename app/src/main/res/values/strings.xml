@@ -123,4 +123,31 @@
     <string name="ts_saving">Saving…</string>
     <string name="ts_saved">Saved to the tracker.</string>
     <string name="ts_save_failed">The tracker did not take the settings. Try again.</string>
+    <!-- main screen: tracker state and telemetry -->
+    <string name="lbl_temp">Temperature</string>
+    <string name="lbl_activity">Activity</string>
+    <string name="panel_live">live · report no. %1$d</string>
+    <string name="panel_link_down">radio not connected · last data from %1$s</string>
+    <string name="panel_quiet">radio connected · no new reports</string>
+    <string name="activity_fmt">%1$d / 99</string>
+    <!-- firmware trk10: alarms, posture, HDOP, home -->
+    <string name="st_impact">impact!</string>
+    <string name="st_fall">fall!</string>
+    <string name="st_idle">still away from home</string>
+    <string name="notif_impact">%s: impact, then no movement</string>
+    <string name="notif_fall">%s: fall, then no movement</string>
+    <string name="notif_still">%s: still for long away from home</string>
+    <string name="pos_pion">upright (stands or lies on its belly)</string>
+    <string name="pos_bok">lies on its side</string>
+    <string name="pos_grzbiet">lies on its back</string>
+    <string name="idle_fmt">no movement for %1$d min</string>
+    <string name="hdop_fmt">HDOP %1$s</string>
+    <string name="ts_idle">Alarm when still away from home after</string>
+    <string name="ts_home_r">Home radius</string>
+    <string name="ts_unit_m">m</string>
+    <string name="ts_home_set">Home = my position</string>
+    <string name="ts_home_clear">Forget home</string>
+    <string name="ts_home_on">Home is saved in the tracker (only there).</string>
+    <string name="ts_home_off">Home is not set: no "still" alarm, naps anywhere.</string>
+    <string name="ts_home_nopos">Your position is unknown (phone GPS or a point on the map).</string>
 </resources>

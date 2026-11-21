@@ -186,6 +186,7 @@ class SpeedChartView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet
     }
     private val path = Path()
     private val clock = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+    private val day = java.util.Date()
 
     override fun onDraw(c: Canvas) {
         val pts = points.filter { it.speedKmh != null }
@@ -225,9 +226,11 @@ class SpeedChartView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet
         text.color = muted
         text.textSize = 10.5f * dp
         text.textAlign = Paint.Align.LEFT
-        c.drawText(clock.format(java.util.Date(t0)), left, height - 4 * dp, text)
+        day.time = t0                     // one reused Date: no allocation while drawing
+        c.drawText(clock.format(day), left, height - 4 * dp, text)
         c.drawText("km/h", left, 11 * dp, text)
         text.textAlign = Paint.Align.RIGHT
-        c.drawText(clock.format(java.util.Date(t1)), right, height - 4 * dp, text)
+        day.time = t1
+        c.drawText(clock.format(day), right, height - 4 * dp, text)
     }
 }

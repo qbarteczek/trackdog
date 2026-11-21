@@ -221,7 +221,9 @@ class MeshLink(ctx: Context, private val listener: Listener) {
 
     private val bondReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, intent: Intent) {
-            val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+            val device: BluetoothDevice? = if (android.os.Build.VERSION.SDK_INT >= 33)
+                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+            else @Suppress("DEPRECATION") intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
             val g = gatt ?: return
             if (device?.address != g.device.address || rx == null || ready) return
             when (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)) {

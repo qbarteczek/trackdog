@@ -12,14 +12,14 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 os.environ.setdefault("LANG", "en_US.UTF-8")
 
-from tdd import fmt, gpx, i18n, report, trackerset  # noqa: E402
+from tdd import fmt, gpx, i18n, panel, report, trackerset  # noqa: E402
 
 V = json.loads((HERE.parent.parent / "shared" / "vectors.json").read_text(encoding="utf-8"))
 T0 = 1_800_000_000_000
 
 # names of the fields in the vectors (as in Report.kt) -> attributes of the Python Report
 FIELDS = {"battPct": "batt_pct", "battMv": "batt_mv", "tempC": "temp_c", "speedKmh": "speed_kmh",
-          "lowBatt": "low_batt", "hasFix": "has_fix", "hasPos": "has_pos"}
+          "lowBatt": "low_batt", "hasFix": "has_fix", "hasPos": "has_pos", "idleMin": "idle_min"}
 
 
 def trail_reports(case):
@@ -132,9 +132,30 @@ class DesktopOnly(unittest.TestCase):
         for k, val in ts["parseVars"]["expect"].items():
             self.assertEqual(got[k], val, k)
         self.assertTrue(trackerset.is_tracker(got))
+        hv = ts["homeValue"]
+        self.assertEqual(trackerset.home_value(hv["lat"], hv["lon"]), hv["expect"])
         i18n.set_lang("pl")
         self.assertEqual(i18n.T("st_asleep"), "śpi")
         self.assertEqual(i18n.T("ts_air", 12, 8)[:30], "Nadawanie: bieg 12%, spacer 8%")
+
+    def test_panel(self):
+        pv = V["panel"]
+        self.assertEqual(panel.FRESH_MS, pv["freshMin"] * 60_000)
+        now = T0 + 3600_000
+
+        def rep(minutes):
+            return None if minutes is None else report.Report(
+                time=now - minutes * 60_000, tracker="TRK1", status="idzie", lat=52.0, lon=21.0, stale=False,
+                batt_pct=90, batt_mv=4100, temp_c=10.0, sats=9, speed_kmh=None, seq=1, snr=-5.0)
+        for c in pv["cases"]:
+            with self.subTest(c["name"]):
+                m = panel.build(rep(c["last"]), rep(c["batt"]), rep(c["temp"]), rep(c["sats"]), c["link"], now)
+                e = c["expect"]
+                self.assertEqual(m.live, e["live"])
+                self.assertEqual(m.snr is not None, e["snr"])
+                for k, attr in (("battAge", "batt_age"), ("tempAge", "temp_age"), ("satsAge", "sats_age")):
+                    got = getattr(m, attr)
+                    self.assertEqual(None if got is None else got // 60_000, e[k], k)
 
 
 if __name__ == "__main__":

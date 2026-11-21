@@ -83,9 +83,18 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-light"
                 android:gravity="center"
-                android:paddingBottom="8dp"
+                android:paddingBottom="2dp"
                 android:textColor="@color/cream"
                 android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/statusSub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="8dp"
+                android:textColor="@color/muted"
+                android:textSize="14sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -111,6 +120,22 @@
                 <LinearLayout style="@style/Tile">
                     <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_gps" />
                     <TextView android:id="@+id/tileGps" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_temp" />
+                    <TextView android:id="@+id/tileTemp" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/Tile">
+                    <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lbl_activity" />
+                    <TextView android:id="@+id/tileActivity" style="@style/Value" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                 </LinearLayout>
 
                 <LinearLayout style="@style/Tile">

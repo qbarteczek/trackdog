@@ -14,7 +14,7 @@ class Field:
     lo: int
     hi: int
     default: int
-    trk8: bool = False   # only firmware trk8 and newer has it
+    trk8: bool = False   # only newer firmware has it (trk8: nap, beat; trk10: idle, home); missing = disabled
 
 
 FIELDS = [
@@ -23,6 +23,8 @@ FIELDS = [
     Field("trk_still", "ts_still", "s", 15, 3600, 300),
     Field("trk_nap", "ts_nap", "min", 0, 1440, 60, trk8=True),
     Field("trk_beat", "ts_beat", "min", 15, 1440, 120, trk8=True),
+    Field("trk_idle", "ts_idle", "min", 0, 1440, 15, trk8=True),
+    Field("trk_home_r", "ts_home_r", "m", 30, 5000, 150, trk8=True),
 ]
 BY_KEY = {f.key: f for f in FIELDS}
 
@@ -44,6 +46,11 @@ def parse_vars(text):
         if sep and k:
             out[k] = v
     return out
+
+
+def home_value(lat, lon):
+    """trk_home for a position (trk10): only in the tracker, never in the repository"""
+    return f"{lat:.6f} {lon:.6f}"
 
 
 def is_tracker(vars_):

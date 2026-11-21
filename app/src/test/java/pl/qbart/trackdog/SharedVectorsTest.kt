@@ -37,6 +37,10 @@ class SharedVectorsTest {
         "hasFix" -> r.hasFix
         "hasPos" -> r.hasPos
         "sos" -> r.sos
+        "alarm" -> r.alarm
+        "hdop" -> r.hdop
+        "posture" -> r.posture
+        "idleMin" -> r.idleMin
         else -> throw AssertionError("unknown field $k")
     }
 
@@ -170,5 +174,30 @@ class SharedVectorsTest {
         val exp = pv.getJSONObject("expect")
         for (k in exp.keys()) assertEquals(k, exp.getString(k), got[k])
         assertEquals(true, TrackerSettings.isTracker(got))
+        val hv = ts.getJSONObject("homeValue")
+        assertEquals(hv.getString("expect"), TrackerSettings.homeValue(hv.getDouble("lat"), hv.getDouble("lon")))
+    }
+
+    @Test
+    fun panel() {
+        val pv = v.getJSONObject("panel")
+        assertEquals(pv.getInt("freshMin") * 60_000L, Panel.FRESH_MS)
+        val now = t0 + 3_600_000
+        fun rep(o: JSONObject, k: String): Report? = if (o.isNull(k)) null else Report(
+            time = now - o.getInt(k) * 60_000L, tracker = "TRK1", status = "idzie", lat = 52.0, lon = 21.0, stale = false,
+            battPct = 90, battMv = 4100, tempC = 10.0, sats = 9, speedKmh = null, course = null, activity = null,
+            seq = 1, lowBatt = false, snr = -5.0)
+        val cases = pv.getJSONArray("cases")
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val e = c.getJSONObject("expect")
+            val m = Panel.build(rep(c, "last"), rep(c, "batt"), rep(c, "temp"), rep(c, "sats"), c.getBoolean("link"), now)
+            val name = c.getString("name")
+            assertEquals(name, e.getBoolean("live"), m.live)
+            assertEquals(name, e.getBoolean("snr"), m.snr != null)
+            for ((k, got) in listOf("battAge" to m.battAge, "tempAge" to m.tempAge, "satsAge" to m.satsAge)) {
+                assertEquals("$name $k", if (e.isNull(k)) null else e.getInt(k).toLong(), got?.div(60_000))
+            }
+        }
     }
 }

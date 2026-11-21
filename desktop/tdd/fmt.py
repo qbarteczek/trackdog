@@ -1,7 +1,7 @@
 """Texts for people (Fmt in the Android app, Util.kt)."""
 from . import i18n
 from .i18n import T
-from .report import ST_ASLEEP, ST_MOVING, ST_NO_GPS, ST_OK, ST_SOS, ST_START, ST_STILL
+from .report import ST_ASLEEP, ST_FALL, ST_IDLE, ST_IMPACT, ST_MOVING, ST_NO_GPS, ST_OK, ST_SOS, ST_START, ST_STILL
 
 FAST_KMH = 7.0   # the same threshold as the firmware uses for its short interval
 
@@ -15,7 +15,24 @@ def status(r):
         return T("st_start")
     if r.status == ST_MOVING:
         return T("st_fast") if (r.speed_kmh or 0.0) >= FAST_KMH else T("st_moving")
-    return T({ST_STILL: "st_still", ST_ASLEEP: "st_asleep", ST_OK: "st_ok", ST_SOS: "st_sos"}.get(r.status, "st_no_gps"))
+    return T({ST_STILL: "st_still", ST_ASLEEP: "st_asleep", ST_OK: "st_ok", ST_SOS: "st_sos", ST_IMPACT: "st_impact",
+              ST_FALL: "st_fall", ST_IDLE: "st_idle"}.get(r.status, "st_no_gps"))
+
+
+def alarm_text(r):
+    """notification for an alarm report (SOS, impact, fall, still away from home)"""
+    return T({ST_SOS: "notif_sos", ST_IMPACT: "notif_impact", ST_FALL: "notif_fall", ST_IDLE: "notif_still"}[r.status],
+             r.tracker)
+
+
+def detail(r):
+    """posture and time without movement (firmware trk10), e.g. 'leży na boku · bez ruchu 23 min'"""
+    parts = []
+    if r.posture:
+        parts.append(T("pos_" + r.posture))
+    if r.idle_min:
+        parts.append(T("idle_fmt", r.idle_min))
+    return " · ".join(parts)
 
 
 def link(state):

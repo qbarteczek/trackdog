@@ -22,11 +22,35 @@ object Fmt {
             Report.ST_MOVING -> if ((r.speedKmh ?: 0.0) >= FAST_KMH) R.string.st_fast else R.string.st_moving
             Report.ST_STILL -> R.string.st_still
             Report.ST_ASLEEP -> R.string.st_asleep
+            Report.ST_IMPACT -> R.string.st_impact
+            Report.ST_FALL -> R.string.st_fall
+            Report.ST_IDLE -> R.string.st_idle
             Report.ST_OK -> R.string.st_ok
             Report.ST_SOS -> R.string.st_sos
             else -> R.string.st_no_gps
         }
     )
+
+    /** notification for an alarm report (SOS, impact, fall, still away from home) */
+    fun alarmText(ctx: Context, r: Report): String = ctx.getString(
+        when (r.status) {
+            Report.ST_IMPACT -> R.string.notif_impact
+            Report.ST_FALL -> R.string.notif_fall
+            Report.ST_IDLE -> R.string.notif_still
+            else -> R.string.notif_sos
+        }, r.tracker
+    )
+
+    /** posture and time without movement (firmware trk10), e.g. "leży na boku · bez ruchu 23 min" */
+    fun detail(ctx: Context, r: Report): String = listOfNotNull(
+        when (r.posture) {
+            "pion" -> ctx.getString(R.string.pos_pion)
+            "bok" -> ctx.getString(R.string.pos_bok)
+            "grzbiet" -> ctx.getString(R.string.pos_grzbiet)
+            else -> null
+        },
+        r.idleMin?.takeIf { it > 0 }?.let { ctx.getString(R.string.idle_fmt, it) },
+    ).joinToString(" · ")
 
     fun link(ctx: Context, s: MeshLink.State): String = ctx.getString(
         when (s) {

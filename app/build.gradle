@@ -15,8 +15,8 @@ android {
         applicationId 'pl.qbart.trackdog'
         minSdk 29
         targetSdk 34
-        versionCode 3
-        versionName '0.3.0'
+        versionCode 4
+        versionName '0.4.0'
     }
 
     // Every build is signed with the one TrackDog key, so a new version always installs as an update of

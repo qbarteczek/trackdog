@@ -48,6 +48,10 @@ class Walk:
         speed = f"{0.0 if resting else kmh:.1f}km/h".replace(".", ",")
         course = f" k{int(bearing(p_lat, p_lon, lat, lon))}" if not resting and kmh >= 2 else ""
         act = 1 if resting else min(int(kmh * 4), 99)
-        text = (f"{NAME}: {status} {pct}% {volt} 8,5°C {9 + seq % 4}sat {speed}{course} a{act} nr{seq} "
+        # like firmware trk9: battery, temperature and satellites in every 10th report only
+        tele = f"{pct}% {volt} 8,5°C {9 + seq % 4}sat " if seq % 10 == 1 else ""
+        # like trk10: HDOP, posture and minutes without motion (lying on its side while resting)
+        extra = f" hdop1,1 bok bz{int(math.fmod(minute, 45) - 20)}" if resting else " hdop1,1 pion"
+        text = (f"{NAME}: {status} {tele}{speed}{course} a{act}{extra} nr{seq} "
                 f"https://maps.google.com/?q={lat:.5f},{lon:.5f}")
         return text, time_ms // 1000, -4.0 - seq % 7

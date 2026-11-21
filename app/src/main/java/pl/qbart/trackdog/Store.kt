@@ -8,14 +8,17 @@ import android.database.sqlite.SQLiteOpenHelper
 import java.io.File
 
 /** The trail: every report ever received, on the phone only. */
-class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.db", null, 1) {
+class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SCHEMA)
         db.execSQL("CREATE INDEX reports_t ON reports(t)")
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
+    /** version 2 (firmware trk10): HDOP, posture, minutes without motion */
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) for ((name, kind) in NEW_COLS) db.execSQL("ALTER TABLE reports ADD COLUMN $name $kind")
+    }
 
     /** false = this report is already stored (the companion delivered it twice) */
     fun insert(r: Report): Boolean =
@@ -27,6 +30,7 @@ class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.d
         put("pct", r.battPct); put("mv", r.battMv); put("temp", r.tempC); put("sats", r.sats)
         put("speed", r.speedKmh); put("course", r.course); put("act", r.activity); put("seq", r.seq)
         put("low", if (r.lowBatt) 1 else 0); put("snr", r.snr)
+        put("hdop", r.hdop); put("pos", r.posture); put("idle", r.idleMin)
     }
 
     fun last(tracker: String?): Report? = query(
@@ -38,6 +42,15 @@ class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.d
         "stale = 0 AND lat IS NOT NULL" + if (tracker == null) "" else " AND tracker = ?",
         if (tracker == null) null else arrayOf(tracker), "t DESC", "1"
     ).firstOrNull()
+
+    /** the last report that has [column] (pct, temp, sats): firmware trk9 sends them in every 10th report */
+    fun lastWith(tracker: String?, column: String): Report? {
+        require(column in setOf("pct", "temp", "sats"))
+        return query(
+            "$column IS NOT NULL" + if (tracker == null) "" else " AND tracker = ?",
+            if (tracker == null) null else arrayOf(tracker), "t DESC", "1"
+        ).firstOrNull()
+    }
 
     fun between(tracker: String?, fromMs: Long, toMs: Long): List<Report> = query(
         "t >= ? AND t < ?" + if (tracker == null) "" else " AND tracker = ?",
@@ -135,19 +148,24 @@ class Store(ctx: Context) : SQLiteOpenHelper(ctx.applicationContext, "trackdog.d
                 pct INTEGER, mv INTEGER, temp REAL, sats INTEGER,
                 speed REAL, course INTEGER, act INTEGER, seq INTEGER,
                 low INTEGER NOT NULL, snr REAL,
+                hdop REAL, pos TEXT, idle INTEGER,
                 UNIQUE(tracker, t))"""
+        val NEW_COLS = listOf("hdop" to "REAL", "pos" to "TEXT", "idle" to "INTEGER")
     }
 
     private fun read(c: Cursor): Report {
         fun i(n: String) = c.getColumnIndexOrThrow(n)
         fun int(n: String) = if (c.isNull(i(n))) null else c.getInt(i(n))
         fun dbl(n: String) = if (c.isNull(i(n))) null else c.getDouble(i(n))
+        fun opt(n: String) = c.getColumnIndex(n).takeIf { it >= 0 && !c.isNull(it) }   // older files lack trk10 columns
         return Report(
             time = c.getLong(i("t")), tracker = c.getString(i("tracker")), status = c.getString(i("status")),
             lat = dbl("lat"), lon = dbl("lon"), stale = c.getInt(i("stale")) != 0,
             battPct = int("pct"), battMv = int("mv"), tempC = dbl("temp"), sats = int("sats"),
             speedKmh = dbl("speed"), course = int("course"), activity = int("act"), seq = int("seq"),
             lowBatt = c.getInt(i("low")) != 0, snr = dbl("snr"), id = c.getLong(i("id")),
+            hdop = opt("hdop")?.let { c.getDouble(it) }, posture = opt("pos")?.let { c.getString(it) },
+            idleMin = opt("idle")?.let { c.getInt(it) },
         )
     }
 }

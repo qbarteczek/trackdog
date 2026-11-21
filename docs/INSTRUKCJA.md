@@ -51,6 +51,9 @@ tracker sam wydłuża odstęp do 30 s (trk8).
 2. W TrackDog: *Ustawienia trackera… → Szukaj trackera* i wybierz tracker z listy (za pierwszym razem PIN).
 3. Zmień odstępy (bieg, spacer, postój, sen po bezruchu, meldunek w czasie snu) i *Zapisz w trackerze*.
    TrackDog odczytuje je z powrotem, więc widzisz, co tracker przyjął. Pod polami jest czas nadawania w %.
+4. Firmware trk10: **alarm bezruchu poza domem po** (minuty, `0` = wyłączony), **promień domu** oraz przycisk
+   **Dom = moja pozycja** – zapisuje pozycję telefonu (w wersji na komputer: Twoją pozycję z mapy albo radia)
+   jako dom, tylko w trackerze. Bez ustawionego domu alarm bezruchu nie działa, a tracker zasypia wszędzie.
 
 To samo okno ma wersja na komputer. Tracker nie przyjmuje ustawień przez radio, tylko w tym oknie Bluetooth.
 
@@ -59,8 +62,13 @@ To samo okno ma wersja na komputer. Tracker nie przyjmuje ustawień przez radio,
 - Tarcza obraca się z telefonem; **głowa psa na obwodzie** pokazuje, w którą stronę iść. Trzymaj telefon poziomo.
 - W środku odległość w linii prostej, pod nią kierunek (np. `NE · 47°`).
 - „ostatnia znana pozycja · 12 min temu” oznacza, że nowszego meldunku z pozycją nie ma – pies mógł się oddalić.
-- Kafelki: prędkość, bateria trackera, liczba satelitów i temperatura, siła sygnału (SNR; im bliżej zera
-  i wyżej, tym lepiej, poniżej około −10 dB łączność jest na granicy).
+- Pod stanem psa: „na żywo · meldunek nr 82” (radio połączone, meldunek świeży), „radio połączone · brak nowych
+  meldunków” albo „radio rozłączone · ostatnie dane z 20:41”; niżej położenie i czas bez ruchu (firmware trk10),
+  np. „leży na boku · bez ruchu 23 min”. „Pionowo” znaczy: stoi **albo leży na brzuchu** – tego tracker nie rozróżni.
+- Kafelki: prędkość, bateria, GPS (satelity i HDOP – poniżej 2 pozycja jest dokładna, powyżej 5 słaba),
+  temperatura trackera, aktywność (0–99, z akcelerometru) i sygnał (SNR; im bliżej zera i wyżej, tym lepiej,
+  poniżej około −10 dB łączność jest na granicy). Firmware trk9+ wysyła baterię, temperaturę i satelity w co
+  dziesiątym meldunku: wtedy pod wartością jest jej wiek („8 min temu”). SNR widać tylko na żywo.
 - **Pokaż w Organic Maps** otwiera pozycję psa w aplikacji z mapą i nawigacją.
 
 Jeśli kompas pokazuje zły kierunek, skalibruj czujnik telefonu: zatocz nim kilka ósemek w powietrzu.
@@ -80,6 +88,8 @@ Zakładki zmienia się przyciskami na dole albo przesunięciem palca w bok (na m
 
 - Stałe powiadomienie pokazuje ostatni meldunek i stan połączenia z radiem – widać je bez otwierania aplikacji.
 - **SOS** i **słaba bateria trackera** (≤ 10 %) dają osobny, głośny alarm.
+- Firmware trk10: **uderzenie** albo **upadek** (silne szarpnięcie, potem pies 30 s się nie rusza) i **bezruch poza
+  domem** (dłużej niż ustawione minuty, dalej niż promień domu) – też głośny alarm i czerwony kompas.
 
 ## 4. Przycisk trackera (T1000-E)
 

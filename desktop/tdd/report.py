@@ -15,6 +15,11 @@ ST_ASLEEP = "śpi"   # firmware trk8: still for an hour, GPS off, heartbeat only
 ST_OK = "OK"
 ST_SOS = "SOS"
 ST_NO_GPS = "brak GPS"
+ST_IMPACT = "uderzenie"   # firmware trk10: jolt, then the dog stays still
+ST_FALL = "upadek"        # trk10: free fall, jolt, still
+ST_IDLE = "bezruch"       # trk10: no motion for a long time away from home
+ALARMS = (ST_SOS, ST_IMPACT, ST_FALL, ST_IDLE)
+POSTURES = ("pion", "bok", "grzbiet")   # trk10: upright (stands or lies on its belly), on its side, on its back
 
 
 @dataclass
@@ -22,7 +27,7 @@ class Report:
     """One report of a tracker, as posted on the MeshCore channel."""
     time: int                      # ms since epoch (clock of the tracker, set from GPS)
     tracker: str                   # node name of the tracker
-    status: str                    # start, idzie, stoi, śpi, OK, SOS, brak GPS
+    status: str                    # start, idzie, stoi, śpi, OK, SOS, brak GPS, uderzenie, upadek, bezruch
     lat: Optional[float] = None
     lon: Optional[float] = None
     stale: bool = False            # the position is the last known one, not a fix of this report
@@ -36,6 +41,9 @@ class Report:
     seq: Optional[int] = None           # report counter of the tracker: gaps = lost reports
     low_batt: bool = False
     snr: Optional[float] = None         # of the packet, as heard by the companion
+    hdop: Optional[float] = None        # trk10, with a fix
+    posture: Optional[str] = None       # trk10: pion / bok / grzbiet
+    idle_min: Optional[int] = None      # trk10: minutes without motion (accelerometer)
     id: int = field(default=0, compare=False)
 
     @property
@@ -51,11 +59,15 @@ class Report:
         return self.status == ST_SOS
 
     @property
+    def alarm(self):
+        return self.status in ALARMS
+
+    @property
     def moving(self):
         return self.status == ST_MOVING
 
 
-_STATUS = re.compile(r"^(start|idzie|stoi|śpi|OK|SOS|brak GPS)(?= |$)")
+_STATUS = re.compile(r"^(start|idzie|stoi|śpi|OK|SOS|brak GPS|uderzenie|upadek|bezruch)(?= |$)")
 _SEQ = re.compile(r"(?:^| )nr(\d+)(?= |$)")
 _PCT = re.compile(r"(?:^| )(\d{1,3})%")
 _VOLT = re.compile(r"(?:^| )(\d+)[,.](\d+)V(?= |$)")
@@ -65,6 +77,9 @@ _SPEED = re.compile(r"(?:^| )(\d+(?:[,.]\d+)?)km/h")
 _COURSE = re.compile(r"(?:^| )k(\d{1,3})(?= |$)")
 _ACT = re.compile(r"(?:^| )a(\d{1,2})(?= |$)")
 _POS = re.compile(r"[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)")
+_HDOP = re.compile(r"(?:^| )hdop(\d+(?:[,.]\d+)?)(?= |$)")
+_POSTURE = re.compile(r"(?:^| )(pion|bok|grzbiet)(?= |$)")
+_IDLE = re.compile(r"(?:^| )bz(\d+)(?= |$)")
 
 
 def _int(rx, body):
@@ -113,6 +128,8 @@ def parse(text, time_ms, snr=None):
         temp_c=_num(_TEMP, body), sats=_int(_SATS, body), speed_kmh=_num(_SPEED, body),
         course=course if course is not None and 0 <= course <= 359 else None,
         activity=_int(_ACT, body), seq=seq, low_batt="bateria!" in body, snr=snr,
+        hdop=_num(_HDOP, body), posture=(lambda m: m.group(1) if m else None)(_POSTURE.search(body)),
+        idle_min=_int(_IDLE, body),
     )
 
 

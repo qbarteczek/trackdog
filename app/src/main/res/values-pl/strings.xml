@@ -121,4 +121,31 @@
     <string name="ts_saving">Zapisywanie…</string>
     <string name="ts_saved">Zapisano w trackerze.</string>
     <string name="ts_save_failed">Tracker nie przyjął ustawień. Spróbuj ponownie.</string>
+    <!-- main screen: tracker state and telemetry -->
+    <string name="lbl_temp">Temperatura</string>
+    <string name="lbl_activity">Aktywność</string>
+    <string name="panel_live">na żywo · meldunek nr %1$d</string>
+    <string name="panel_link_down">radio rozłączone · ostatnie dane z %1$s</string>
+    <string name="panel_quiet">radio połączone · brak nowych meldunków</string>
+    <string name="activity_fmt">%1$d / 99</string>
+    <!-- firmware trk10: alarms, posture, HDOP, home -->
+    <string name="st_impact">uderzenie!</string>
+    <string name="st_fall">upadek!</string>
+    <string name="st_idle">bezruch poza domem</string>
+    <string name="notif_impact">%s: uderzenie, potem bez ruchu</string>
+    <string name="notif_fall">%s: upadek, potem bez ruchu</string>
+    <string name="notif_still">%s: długo bez ruchu poza domem</string>
+    <string name="pos_pion">pionowo (stoi lub leży na brzuchu)</string>
+    <string name="pos_bok">leży na boku</string>
+    <string name="pos_grzbiet">leży na grzbiecie</string>
+    <string name="idle_fmt">bez ruchu %1$d min</string>
+    <string name="hdop_fmt">HDOP %1$s</string>
+    <string name="ts_idle">Alarm bezruchu poza domem po</string>
+    <string name="ts_home_r">Promień domu</string>
+    <string name="ts_unit_m">m</string>
+    <string name="ts_home_set">Dom = moja pozycja</string>
+    <string name="ts_home_clear">Zapomnij dom</string>
+    <string name="ts_home_on">Dom jest zapisany w trackerze (tylko tam).</string>
+    <string name="ts_home_off">Dom nie jest ustawiony: bez alarmu bezruchu, sen wszędzie.</string>
+    <string name="ts_home_nopos">Nie znam Twojej pozycji (GPS telefonu albo pozycja na mapie).</string>
 </resources>

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QComboBox,
                                QRadioButton, QScrollArea, QSpinBox, QStackedWidget, QSystemTrayIcon, QTabWidget,
                                QVBoxLayout, QWidget, QMenu)
 
-from . import VERSION, demo, fmt, gpx, i18n, link as linkmod, theme, trackerset
+from . import VERSION, demo, fmt, gpx, i18n, link as linkmod, panel, theme, trackerset
 from .i18n import T
 from .mapview import SOURCES, MapView, TileCache
 from .report import Trail, bearing, cardinal, dist_m, parse
@@ -195,12 +195,16 @@ class MainWindow(QMainWindow):
         self.status_line.setObjectName("head")
         self.status_line.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_line.setWordWrap(True)
-        side.addWidget(card(self.compass, self.status_line))
+        self.status_sub = muted()
+        self.status_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_sub.setWordWrap(True)
+        side.addWidget(card(self.compass, self.status_line, self.status_sub))
         grid = QGridLayout()
         grid.setSpacing(8)
         self.t_speed, self.t_batt = Tile(T("lbl_speed")), Tile(T("lbl_battery"))
-        self.t_gps, self.t_signal = Tile(T("lbl_gps")), Tile(T("lbl_signal"))
-        for i, t in enumerate((self.t_speed, self.t_batt, self.t_gps, self.t_signal)):
+        self.t_gps, self.t_temp = Tile(T("lbl_gps")), Tile(T("lbl_temp"))
+        self.t_act, self.t_signal = Tile(T("lbl_activity")), Tile(T("lbl_signal"))
+        for i, t in enumerate((self.t_speed, self.t_batt, self.t_gps, self.t_temp, self.t_act, self.t_signal)):
             grid.addWidget(t, i // 2, i % 2)
         side.addLayout(grid)
         self.me_label = muted()
@@ -466,8 +470,8 @@ class MainWindow(QMainWindow):
         if not quiet and (chosen is None or chosen == r.tracker or self.cfg["demo"]):
             shown = self.last if self.last and self.last.tracker == r.tracker else None
             fresh = now - r.time < FRESH_MS
-            if fresh and r.sos:
-                self.alarm(T("notif_sos", r.tracker))
+            if fresh and r.alarm:
+                self.alarm(fmt.alarm_text(r))
             if fresh and r.low_batt and not (shown and shown.low_batt):
                 self.alarm(T("notif_low", r.tracker))
         self.reload()
@@ -507,17 +511,9 @@ class MainWindow(QMainWindow):
 
         self.head_tracker.setText(self.tracker or "TrackDog")
         self.t_speed.set(fmt.kmh(self.last_speed) if self.last_speed is not None else "—")
-        if l is None or l.batt_pct is None:
-            self.t_batt.set("—")
-        else:
-            self.t_batt.set(f"{l.batt_pct}% · {fmt.volts(l.batt_mv)}" if l.batt_mv else f"{l.batt_pct}%")
-        if l is None:
-            self.t_gps.set("—")
-        elif not l.has_fix:
-            self.t_gps.set(T("st_no_gps"))
-        else:
-            self.t_gps.set(T("satellites", l.sats or 0) + (f" · {l.temp_c:.0f}°C" if l.temp_c is not None else ""))
-        self.t_signal.set(f"SNR {fmt.num(l.snr)} dB" if l and l.snr is not None else "—")
+        self.t_act.set(T("activity_fmt", l.activity) if l and l.activity is not None else "—")
+        tr = self.tracker
+        self.tele = tuple(self.store.last_with(tr, c) if tr else None for c in ("pct", "temp", "sats"))
 
         # link chip and device page
         st = self.link_state
@@ -561,14 +557,51 @@ class MainWindow(QMainWindow):
             self.load_trail()
         self.live()
 
+    def _tiles(self):
+        """battery, GPS, temperature, signal: the last known values with their age (Panel.kt)"""
+        l = self.last
+        now = int(time.time() * 1000)
+        link_up = self.cfg["demo"] or self.link_state == linkmod.CONNECTED
+        m = panel.build(l, *getattr(self, "tele", (None, None, None)), link_up, now)
+        self.panel = m
+
+        def aged(text, age):
+            return text if age is None else f'{text}<br><span style="font-size:small">{fmt.age(age)}</span>'
+        b = m.batt
+        self.t_batt.set("—" if b is None else aged(f"{b.batt_pct}% · {fmt.volts(b.batt_mv)}" if b.batt_mv
+                                                   else f"{b.batt_pct}%", m.batt_age))
+        if l is None:
+            self.t_gps.set("—")
+        elif not l.has_fix:
+            self.t_gps.set(T("st_no_gps"))
+        else:
+            gps = aged(T("satellites", m.sats.sats), m.sats_age) if m.sats else "fix"
+            if l.hdop is not None:
+                gps += " · " + T("hdop_fmt", fmt.num(l.hdop))
+            self.t_gps.set(gps)
+        self.t_temp.set("—" if m.temp is None else aged(f"{m.temp.temp_c:.0f}°C", m.temp_age))
+        self.t_signal.set(f"SNR {fmt.num(m.snr)} dB" if m.snr is not None else "—")
+
     def live(self):
         """everything that changes with time alone: age of the report, distance, direction"""
         l = self.last
         now = int(time.time() * 1000)
         self.status_line.setText(T("no_reports") if l is None else f"{fmt.status(l)} · {fmt.age(now - l.time)}")
+        self._tiles()
+        extra = fmt.detail(l) if l is not None else ""
+        if l is None:
+            self.status_sub.setText("")
+        elif self.panel.live:
+            self.status_sub.setText(T("panel_live", l.seq or 0) + (f"\n{extra}" if extra else ""))
+        elif self.cfg["demo"] or self.link_state == linkmod.CONNECTED:
+            self.status_sub.setText(T("panel_quiet"))
+        else:
+            self.status_sub.setText(T("panel_link_down", datetime.fromtimestamp(l.time / 1000).strftime("%H:%M")))
+        if l is not None and extra and not self.panel.live:
+            self.status_sub.setText(self.status_sub.text() + "\n" + extra)
         p = self.pos
         me = self.me()
-        alarm = l is not None and l.sos and now - l.time < 15 * 60_000
+        alarm = l is not None and l.alarm and now - l.time < 15 * 60_000
         old = p is not None and (p is not l or p.stale or now - p.time > FRESH_MS)
         self.live_map.set_dog(p, old, alarm)
         self.trail_map.set_dog(p if self.day == date.today().isoformat() else None, old, alarm)
@@ -960,6 +993,21 @@ class TrackerSettingsDialog(QDialog):
             form.addRow(T(f.label), box)
         v.addLayout(form)
         v.addWidget(muted(T("ts_nap_hint")))
+        # home (trk10): the "still" alarm and naps depend on it; saved only in the tracker
+        self.home_state = muted()
+        self.home_state.setWordWrap(True)
+        self.b_home = QPushButton(T("ts_home_set"))
+        self.b_home.clicked.connect(self._home_here)
+        self.b_home_clear = QPushButton(T("ts_home_clear"))
+        self.b_home_clear.clicked.connect(lambda: self._save_home("-"))
+        for b in (self.b_home, self.b_home_clear):
+            b.setEnabled(False)
+        hr = QHBoxLayout()
+        hr.addWidget(self.b_home)
+        hr.addWidget(self.b_home_clear)
+        hr.addStretch(1)
+        v.addWidget(self.home_state)
+        v.addLayout(hr)
         self.air = muted()
         self.air.setWordWrap(True)
         v.addWidget(self.air)
@@ -1005,7 +1053,24 @@ class TrackerSettingsDialog(QDialog):
                 box.setEnabled(False)
                 old = True
         self.b_save.setEnabled(True)
+        has_home = "trk_home" in vars_
+        for b in (self.b_home, self.b_home_clear):
+            b.setEnabled(has_home)
+        self.home_state.setText("" if not has_home else T("ts_home_on") if vars_.get("trk_home") == "1"
+                                else T("ts_home_off"))
         self.status.setText(((T("ts_saved") if changes else "") + (" " + T("ts_old_fw") if old else "")).strip())
+
+    def _home_here(self):
+        me = self.parent().me() if hasattr(self.parent(), "me") else None
+        if not me:
+            self.status.setText(T("ts_home_nopos"))
+            return
+        self._save_home(trackerset.home_value(me[0], me[1]))
+
+    def _save_home(self, value):
+        self.b_save.setEnabled(False)
+        self.status.setText(T("ts_saving"))
+        self._call({"trk_home": value})
 
     def _save(self):
         changes = {k: box.value() for k, box in self.boxes.items()

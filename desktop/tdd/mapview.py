@@ -9,7 +9,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 from PySide6.QtCore import QByteArray, QPointF, QRectF, Qt, QUrl, Signal
-from PySide6.QtGui import QAction, QBrush, QColor, QDesktopServices, QFont, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QAction, QColor, QDesktopServices, QFont, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PySide6.QtWidgets import QMenu, QWidget
 

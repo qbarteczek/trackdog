@@ -30,7 +30,9 @@ import android.os.ParcelUuid
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.text.SpannableString
+import android.text.format.DateFormat
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -47,6 +49,7 @@ import org.mapsforge.map.reader.MapFile
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
@@ -70,6 +73,7 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
     // what is on screen
     private var tracker: String? = null
     private var last: Report? = null        // newest report of the tracker
+    private var tele: List<Report?> = listOf(null, null, null)   // last reports with battery, temperature, satellites
     private var pos: Report? = null         // newest report with a position (may be older than [last])
     private var lastSpeed: Double? = null
     private var day: String? = null         // yyyy-MM-dd shown on the trail page
@@ -258,19 +262,9 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         findViewById<TextView>(R.id.headTracker).text = tracker ?: ""
         val l = last
         findViewById<TextView>(R.id.tileSpeed).text = lastSpeed?.let { Fmt.kmh(it) } ?: "—"
-        findViewById<TextView>(R.id.tileBattery).text = when {
-            l?.battPct == null -> "—"
-            l.battMv != null -> String.format(Locale.getDefault(), "%d%% · %.2f V", l.battPct, l.battMv / 1000.0)
-            else -> "${l.battPct}%"
-        }
-        findViewById<TextView>(R.id.tileGps).text = when {
-            l == null -> "—"
-            !l.hasFix -> getString(R.string.st_no_gps)
-            else -> getString(R.string.satellites, l.sats ?: 0) +
-                (l.tempC?.let { String.format(Locale.getDefault(), " · %.0f°C", it) } ?: "")
-        }
-        findViewById<TextView>(R.id.tileSignal).text =
-            l?.snr?.let { String.format(Locale.getDefault(), "SNR %.1f dB", it) } ?: "—"
+        findViewById<TextView>(R.id.tileActivity).text = l?.activity?.let { getString(R.string.activity_fmt, it) } ?: "—"
+        // trk9 sends battery, temperature and satellites in every 10th report: the last known ones, with their age
+        tele = listOf("pct", "temp", "sats").map { c -> tracker?.let { store.lastWith(it, c) } }
 
         // link chip and device page
         val state = Hub.linkState
@@ -310,6 +304,36 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         live()
     }
 
+    /** battery, GPS, temperature, signal: the last known values with their age (Panel) */
+    private fun tiles(now: Long): Panel.Model {
+        val l = last
+        val m = Panel.build(l, tele[0], tele[1], tele[2], prefs.demo || Hub.linkState == MeshLink.State.CONNECTED, now)
+        fun aged(text: String, age: Long?): CharSequence {
+            if (age == null) return text
+            val s = SpannableString(text + "\n" + Fmt.age(this, age))
+            s.setSpan(RelativeSizeSpan(0.55f), text.length, s.length, 0)
+            s.setSpan(ForegroundColorSpan(getColor(R.color.muted)), text.length, s.length, 0)
+            return s
+        }
+        findViewById<TextView>(R.id.tileBattery).text = m.batt?.let { b ->
+            aged(if (b.battMv != null) String.format(Locale.getDefault(), "%d%% · %.2f V", b.battPct, b.battMv / 1000.0)
+                 else "${b.battPct}%", m.battAge)
+        } ?: "—"
+        findViewById<TextView>(R.id.tileGps).text = when {
+            l == null -> "—"
+            !l.hasFix -> getString(R.string.st_no_gps)
+            else -> {
+                val hdop = l.hdop?.let { " · " + getString(R.string.hdop_fmt, String.format(Locale.getDefault(), "%.1f", it)) } ?: ""
+                if (m.sats != null) aged(getString(R.string.satellites, m.sats.sats ?: 0) + hdop, m.satsAge) else "fix$hdop"
+            }
+        }
+        findViewById<TextView>(R.id.tileTemp).text =
+            m.temp?.let { aged(String.format(Locale.getDefault(), "%.0f°C", it.tempC), m.tempAge) } ?: "—"
+        findViewById<TextView>(R.id.tileSignal).text =
+            m.snr?.let { String.format(Locale.getDefault(), "SNR %.1f dB", it) } ?: "—"
+        return m
+    }
+
     /** everything that changes with time alone: age of the report, distance, direction */
     private fun live() {
         val l = last
@@ -317,10 +341,19 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
         findViewById<TextView>(R.id.statusLine).text =
             if (l == null) getString(R.string.no_reports)
             else Fmt.status(this, l) + " · " + Fmt.age(this, now - l.time)
+        val m = tiles(now)
+        val sub = when {
+            l == null -> ""
+            m.live -> getString(R.string.panel_live, l.seq ?: 0)
+            prefs.demo || Hub.linkState == MeshLink.State.CONNECTED -> getString(R.string.panel_quiet)
+            else -> getString(R.string.panel_link_down, DateFormat.getTimeFormat(this).format(Date(l.time)))
+        }
+        val extra = l?.let { Fmt.detail(this, it) } ?: ""
+        findViewById<TextView>(R.id.statusSub).text = if (extra.isEmpty()) sub else "$sub\n$extra"
 
         val p = pos
         val ph = phone
-        compass.alarm = l != null && l.sos && now - l.time < 15 * 60_000
+        compass.alarm = l != null && l.alarm && now - l.time < 15 * 60_000
         compass.heading = heading
         when {
             p == null -> {
@@ -613,7 +646,9 @@ class MainActivity : Activity(), SensorEventListener, LocationListener {
     private fun trackerSettings() {
         AlertDialog.Builder(this).setTitle(R.string.ts_title).setMessage(R.string.ts_open_hint)
             .setPositiveButton(R.string.ts_search) { _, _ ->
-                scanRadios(R.string.ts_title) { mac, name -> TrackerSettingsDialog(this, mac, name) }
+                scanRadios(R.string.ts_title) { mac, name ->
+                    TrackerSettingsDialog(this, mac, name) { phone?.let { it.latitude to it.longitude } }
+                }
             }
             .setNegativeButton(R.string.no, null)
             .show()

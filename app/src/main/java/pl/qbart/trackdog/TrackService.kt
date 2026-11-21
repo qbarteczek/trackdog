@@ -159,7 +159,7 @@ class TrackService : Service(), MeshLink.Listener {
                 updateStatus()
             }
             val fresh = now - r.time < 10 * 60_000
-            if (fresh && r.sos) alarm(NOTIF_SOS, getString(R.string.notif_sos, r.tracker))
+            if (fresh && r.alarm) alarm(NOTIF_SOS, Fmt.alarmText(this, r))
             if (fresh && r.lowBatt && shown?.lowBatt != true) alarm(NOTIF_LOW, getString(R.string.notif_low, r.tracker))
         }
         Hub.changed()
@@ -242,12 +242,17 @@ class TrackService : Service(), MeshLink.Listener {
         val seq = ++demoSeq
         val status = if (seq == 1) "start" else if (resting) "stoi" else "idzie"
         val pct = (97 - min / 8).toInt()
+        // like firmware trk9: battery, temperature and satellites in every 10th report only
+        val tele = if (seq % 10 == 1) String.format(Locale.ROOT, "%d%% %s 8,5°C %dsat ", pct,
+            String.format(Locale.ROOT, "%.2fV", 3.6 + pct * 0.006).replace('.', ','), 9 + seq % 4) else ""
         val text = String.format(
-            Locale.ROOT, "%s: %s %d%% %s 8,5°C %dsat %s%s a%d nr%d https://maps.google.com/?q=%.5f,%.5f",
-            DEMO_NAME, status, pct, String.format(Locale.ROOT, "%.2fV", 3.6 + pct * 0.006).replace('.', ','),
-            9 + seq % 4, String.format(Locale.ROOT, "%.1fkm/h", if (resting) 0.0 else kmh).replace('.', ','),
+            Locale.ROOT, "%s: %s %s%s%s a%d%s nr%d https://maps.google.com/?q=%.5f,%.5f",
+            DEMO_NAME, status, tele, String.format(Locale.ROOT, "%.1fkm/h", if (resting) 0.0 else kmh).replace('.', ','),
             if (!resting && kmh >= 2) " k" + Geo.bearing(pLat, pLon, lat, lon).toInt() else "",
-            if (resting) 1 else (kmh * 4).toInt().coerceAtMost(99), seq, lat, lon
+            if (resting) 1 else (kmh * 4).toInt().coerceAtMost(99),
+            // like trk10: HDOP, posture and minutes without motion (lying on its side while resting)
+            if (resting) " hdop1,1 bok bz" + ((min % 45) - 20).toInt() else " hdop1,1 pion",
+            seq, lat, lon
         )
         onChannelText(text, timeMs / 1000, -4.0 - seq % 7)
     }

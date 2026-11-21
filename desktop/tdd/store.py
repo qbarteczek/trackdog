@@ -14,21 +14,28 @@ SCHEMA = """CREATE TABLE IF NOT EXISTS reports(
     pct INTEGER, mv INTEGER, temp REAL, sats INTEGER,
     speed REAL, course INTEGER, act INTEGER, seq INTEGER,
     low INTEGER NOT NULL, snr REAL,
+    hdop REAL, pos TEXT, idle INTEGER,
     UNIQUE(tracker, t))"""
+# added with firmware trk10; an older database gets them with ALTER TABLE (Store.kt: database version 2)
+NEW_COLS = (("hdop", "REAL"), ("pos", "TEXT"), ("idle", "INTEGER"))
 
-COLS = "t, tracker, status, lat, lon, stale, pct, mv, temp, sats, speed, course, act, seq, low, snr"
+COLS = "t, tracker, status, lat, lon, stale, pct, mv, temp, sats, speed, course, act, seq, low, snr, hdop, pos, idle"
+_MARKS = ",".join("?" * len(COLS.split(",")))
 
 
 def _row(r):
     return (r.time, r.tracker, r.status, r.lat, r.lon, int(r.stale), r.batt_pct, r.batt_mv, r.temp_c, r.sats,
-            r.speed_kmh, r.course, r.activity, r.seq, int(r.low_batt), r.snr)
+            r.speed_kmh, r.course, r.activity, r.seq, int(r.low_batt), r.snr, r.hdop, r.posture, r.idle_min)
 
 
 def _read(c):
+    keys = c.keys()   # a database from an older version has no trk10 columns
+    opt = lambda k: c[k] if k in keys else None   # noqa: E731
     return Report(time=c["t"], tracker=c["tracker"], status=c["status"], lat=c["lat"], lon=c["lon"],
                   stale=bool(c["stale"]), batt_pct=c["pct"], batt_mv=c["mv"], temp_c=c["temp"], sats=c["sats"],
                   speed_kmh=c["speed"], course=c["course"], activity=c["act"], seq=c["seq"],
-                  low_batt=bool(c["low"]), snr=c["snr"], id=c["id"])
+                  low_batt=bool(c["low"]), snr=c["snr"], id=c["id"],
+                  hdop=opt("hdop"), posture=opt("pos"), idle_min=opt("idle"))
 
 
 class Store:
@@ -36,19 +43,23 @@ class Store:
         self.db = sqlite3.connect(str(path))
         self.db.row_factory = sqlite3.Row
         self.db.execute(SCHEMA)
+        have = {r[1] for r in self.db.execute("PRAGMA table_info(reports)")}
+        for name, kind in NEW_COLS:
+            if name not in have:
+                self.db.execute(f"ALTER TABLE reports ADD COLUMN {name} {kind}")
         self.db.execute("CREATE INDEX IF NOT EXISTS reports_t ON reports(t)")
         self.db.commit()
 
     def insert(self, r):
         """False = this report is already stored (the companion delivered it twice)"""
-        cur = self.db.execute(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({','.join('?' * 16)})", _row(r))
+        cur = self.db.execute(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({_MARKS})", _row(r))
         self.db.commit()
         return cur.rowcount > 0
 
     def insert_many(self, reports):
         """number of reports that were new"""
         before = self.count()
-        self.db.executemany(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({','.join('?' * 16)})",
+        self.db.executemany(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({_MARKS})",
                             [_row(r) for r in reports])
         self.db.commit()
         return self.count() - before
@@ -69,7 +80,7 @@ class Store:
         try:
             out.execute("DROP TABLE IF EXISTS reports")
             out.execute(SCHEMA)
-            out.executemany(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({','.join('?' * 16)})",
+            out.executemany(f"INSERT OR IGNORE INTO reports({COLS}) VALUES ({_MARKS})",
                             [_row(r) for r in self._query(None, (), "t ASC", None)])
             out.commit()
         finally:
@@ -82,6 +93,12 @@ class Store:
     def last_fix(self, tracker):
         """the last report that carries a fresh fix"""
         where = "stale = 0 AND lat IS NOT NULL" + ("" if tracker is None else " AND tracker = ?")
+        return next(iter(self._query(where, () if tracker is None else (tracker,), "t DESC", 1)), None)
+
+    def last_with(self, tracker, column):
+        """the last report that has the column (pct, temp, sats): trk9 sends them in every 10th report"""
+        assert column in ("pct", "temp", "sats")
+        where = f"{column} IS NOT NULL" + ("" if tracker is None else " AND tracker = ?")
         return next(iter(self._query(where, () if tracker is None else (tracker,), "t DESC", 1)), None)
 
     def between(self, tracker, from_ms, to_ms):
